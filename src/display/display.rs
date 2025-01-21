@@ -9,27 +9,26 @@ pub struct Grid {
     pub tiles: Vec<Tile>,
 }
 
-pub struct Board {}
+pub struct Board {
+    screen_width: f32,
+    screen_height: f32,
+}
 
 impl Board {
     pub fn new() -> Self {
-        Self {}
+        let screen_width = screen_width();
+        let screen_height = screen_height();
+        Self {screen_width, screen_height}
     }
 
     pub fn display(&self) {
         clear_background(WHITE);
 
-        // Pobranie rozmiaru ekranu
-        let screen_width = screen_width();
-        let screen_height = screen_height();
-
-        // Wyśrodkowanie siatki na ekranie
         let grid_width = GRID_SIZE as f32 * SQUARE_SIZE;
         let grid_height = GRID_SIZE as f32 * SQUARE_SIZE;
-        let offset_x = (screen_width - grid_width) / 2.0;
-        let offset_y = (screen_height - grid_height) / 2.0;
+        let offset_x = (self.screen_width - grid_width) / 2.0;
+        let offset_y = (self.screen_height - grid_height) / 2.0;
 
-        // Rysowanie siatki
         for row in 0..GRID_SIZE {
             for col in 0..GRID_SIZE {
                 let x = offset_x + col as f32 * SQUARE_SIZE;
