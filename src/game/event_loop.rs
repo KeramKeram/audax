@@ -5,7 +5,7 @@ use std::collections::VecDeque;
 
 pub type Payload = Vec<u8>;
 pub trait Handler: Send + Sync {
-    fn handle(&self, event: GameEvent, payload: Payload);
+    fn handle(&self, event: &GameEvent, payload: &Payload);
 }
 
 pub struct Event {
@@ -50,23 +50,13 @@ impl EventLoop {
                 let registry = registry.lock().unwrap();
                 if let Some(handlers) = registry.get(&event.event) {
                     for handler in handlers {
-                        handler.handle(event.event.clone(), event.payload.clone());
+                        handler.handle(&event.event, &event.payload);
                     }
                 }
             } else {
                 // Sleep for a short duration to prevent busy-waiting
                 thread::sleep(std::time::Duration::from_millis(10));
             }
-
-           if (self.events.lock().unwrap().len() > 0) {
-               let event = self.events.lock().unwrap().pop_front().unwrap();
-               let registry = registry.lock().unwrap();
-               if let Some(handlers) = registry.get(&event.event) {
-                   for handler in handlers {
-                       handler.handle(event.event.clone(), event.payload.clone());
-                   }
-               }
-           }
         }
     }
 }
@@ -81,7 +71,7 @@ mod tests {
     }
 
     impl Handler for TestHandler {
-        fn handle(&self, _event: GameEvent, _payload: Payload) {
+        fn handle(&self, _event: &GameEvent, _payload: &Payload) {
             let mut called = self.called.lock().unwrap();
             *called = true;
         }
