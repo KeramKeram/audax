@@ -16,12 +16,6 @@ pub struct Dispatcher {
     registry: Arc<Mutex<HashMap<GameEvent, Vec<Arc<dyn Handler>>>>>,
 }
 
-#[derive(Clone)]
-pub struct Listener {
-    pub event: GameEvent,
-    pub handler: Arc<dyn Handler>,
-}
-
 pub struct EventLoop {
     pub register: Arc<Mutex<HashMap<GameEvent, Vec<Arc<dyn Handler>>>>>,
     pub events: Arc<Mutex<VecDeque<Event>>>
@@ -46,8 +40,24 @@ impl EventLoop {
 
     pub fn start(&self) {
         let registry = Arc::clone(&self.register);
-
         loop {
+            let event_opt = {
+                let mut events = self.events.lock().unwrap();
+                events.pop_front()
+            };
+
+            if let Some(event) = event_opt {
+                let registry = registry.lock().unwrap();
+                if let Some(handlers) = registry.get(&event.event) {
+                    for handler in handlers {
+                        handler.handle(event.event.clone(), event.payload.clone());
+                    }
+                }
+            } else {
+                // Sleep for a short duration to prevent busy-waiting
+                thread::sleep(std::time::Duration::from_millis(10));
+            }
+
            if (self.events.lock().unwrap().len() > 0) {
                let event = self.events.lock().unwrap().pop_front().unwrap();
                let registry = registry.lock().unwrap();
