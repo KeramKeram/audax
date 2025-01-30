@@ -15,7 +15,7 @@ pub struct Event {
 pub struct Dispatcher {
     registry: Arc<Mutex<HashMap<GameEvent, Vec<Arc<dyn Handler>>>>>,
 }
-
+#[derive(Clone)]
 pub struct EventLoop {
     pub register: Arc<Mutex<HashMap<GameEvent, Vec<Arc<dyn Handler>>>>>,
     pub events: Arc<Mutex<VecDeque<Event>>>
@@ -68,6 +68,74 @@ impl EventLoop {
                }
            }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::Arc;
+
+    struct TestHandler {
+        pub called: Arc<Mutex<bool>>,
+    }
+
+    impl Handler for TestHandler {
+        fn handle(&self, _event: GameEvent, _payload: Payload) {
+            let mut called = self.called.lock().unwrap();
+            *called = true;
+        }
+    }
+
+    #[test]
+    fn test_register_handler() {
+        let mut event_loop = EventLoop::new(vec![]);
+        let handler = Arc::new(TestHandler {
+            called: Arc::new(Mutex::new(false)),
+        });
+
+        event_loop.register_handler(GameEvent::TileClicked, handler.clone());
+
+        let registry = event_loop.register.lock().unwrap();
+        assert!(registry.contains_key(&GameEvent::TileClicked));
+        assert_eq!(registry[&GameEvent::TileClicked].len(), 1);
+    }
+
+    #[test]
+    fn test_add_event() {
+        let mut event_loop = EventLoop::new(vec![]);
+        event_loop.add_event(GameEvent::TileClicked, vec![1, 2, 3]);
+
+        let events = event_loop.events.lock().unwrap();
+        assert_eq!(events.len(), 1);
+        assert_eq!(events[0].event, GameEvent::TileClicked);
+        assert_eq!(events[0].payload, vec![1, 2, 3]);
+    }
+
+    #[test]
+    fn test_event_handling() {
+        let mut event_loop = EventLoop::new(vec![]);
+        let called = Arc::new(Mutex::new(false));
+        let handler = Arc::new(TestHandler { called: called.clone() });
+
+        event_loop.register_handler(GameEvent::TileClicked, handler.clone());
+        event_loop.add_event(GameEvent::TileClicked, vec![]);
+
+        // Run the event loop in a separate thread to avoid blocking
+        let event_loop_clone = event_loop.clone();
+        let handle = std::thread::spawn(move || {
+            event_loop_clone.start();
+        });
+
+        // Give the event loop some time to process the event
+        std::thread::sleep(std::time::Duration::from_millis(100));
+
+        // Check if the handler was called
+        let called = called.lock().unwrap();
+        assert!(*called);
+
+        // Stop the event loop thread
+        handle.thread().unpark();
     }
 }
 
