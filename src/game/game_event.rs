@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum GameEvent {
-    TileClicked { x: i32, y: i32 },
+    TileClicked
 }

@@ -57,7 +57,7 @@ impl Board {
         self.tiles.get(row * Board::GRID_SIZE + col)
     }
 
-    pub fn handle_event(&mut self, event: GameEvent) {
+/*    pub fn handle_event(&mut self, event: GameEvent) {
         match event {
             GameEvent::TileClicked { x, y } => {
                 if let Some(tile) = self.get_tile(x as f32, y as f32) {
@@ -65,5 +65,5 @@ impl Board {
                 }
             }
         }
-    }
+    }*/
 }
