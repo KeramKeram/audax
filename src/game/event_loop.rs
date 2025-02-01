@@ -1,3 +1,4 @@
+use bincode;
 use crate::game::GameEvent;
 use std::sync::{Arc, Mutex};
 use std::{collections::HashMap, thread};
