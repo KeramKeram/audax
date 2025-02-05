@@ -29,11 +29,11 @@ impl EventLoop {
         }
     }
 
-    pub fn register_handler(&mut self, event: GameEvent, handler: Arc<dyn Handler>) {
+    pub fn register_handler(&self, event: GameEvent, handler: Arc<dyn Handler>) {
         let mut registry = self.register.lock().unwrap();
         registry.entry(event).or_insert_with(Vec::new).push(handler);
     }
-    pub fn add_event(&mut self, event: GameEvent, payload: Payload) {
+    pub fn add_event(&self, event: GameEvent, payload: Payload) {
         let mut events = self.events.lock().unwrap();
         events.push_back(Event { event, payload });
     }
