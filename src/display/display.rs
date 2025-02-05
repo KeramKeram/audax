@@ -1,7 +1,6 @@
 use super::tile::{Tile, TileType};
 use macroquad::color::{BLACK, WHITE};
 use macroquad::prelude::{clear_background, draw_rectangle_lines, screen_height, screen_width};
-use crate::game::GameEvent;
 
 pub struct Board {
     screen_width: f32,
