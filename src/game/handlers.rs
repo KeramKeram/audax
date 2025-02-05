@@ -5,7 +5,7 @@ pub struct MouseClickHandler {
 }
 
 impl Handler for MouseClickHandler {
-    fn handle(&self, _event: &GameEvent, _payload: &Payload) {
+    fn handle(&self, event: &GameEvent, payload: &Payload) {
         println!("Mouse clicked Event Loop!");
     }
 }

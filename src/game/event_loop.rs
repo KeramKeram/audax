@@ -72,7 +72,7 @@ mod tests {
     }
 
     impl Handler for TestHandler {
-        fn handle(&self, _event: &GameEvent, _payload: &Payload) {
+        fn handle(&self, event: &GameEvent, payload: &Payload) {
             let mut called = self.called.lock().unwrap();
             *called = true;
         }
