@@ -1,7 +1,7 @@
+use std::sync::mpsc::{self, Sender, Receiver};
 use crate::game::GameEvent;
 use std::sync::{Arc, Mutex};
 use std::{collections::HashMap, thread};
-use std::collections::VecDeque;
 
 pub type Payload = Vec<u8>;
 pub trait Handler: Send + Sync {
@@ -12,20 +12,29 @@ pub struct Event {
     pub event: GameEvent,
     pub payload: Payload
 }
-pub struct Dispatcher {
-    registry: Arc<Mutex<HashMap<GameEvent, Vec<Arc<dyn Handler>>>>>,
-}
 #[derive(Clone)]
+pub struct Dispatcher {
+    pub tx: Sender<(GameEvent, Payload)>,
+}
+
+impl Dispatcher {
+    pub fn new() -> Self {
+        let (tx, _rx) = mpsc::channel();
+        Self { tx }
+    }
+}
+
 pub struct EventLoop {
     pub register: Arc<Mutex<HashMap<GameEvent, Vec<Arc<dyn Handler>>>>>,
-    pub events: Arc<Mutex<VecDeque<Event>>>
+    tx: Sender<(GameEvent, Payload)>,
+    rx: Receiver<(GameEvent, Payload)>,
 }
 
 impl EventLoop {
     pub fn new(tiles: Vec<GameEvent>) -> Self {
+        let (tx, rx) = mpsc::channel();
         EventLoop {
-            register: Arc::new(Mutex::new(HashMap::new())),
-            events: Arc::new(Mutex::new(VecDeque::new())),
+            register: Arc::new(Mutex::new(HashMap::new())), tx, rx
         }
     }
 
@@ -33,29 +42,22 @@ impl EventLoop {
         let mut registry = self.register.lock().unwrap();
         registry.entry(event).or_insert_with(Vec::new).push(handler);
     }
-    pub fn add_event(&self, event: GameEvent, payload: Payload) {
-        let mut events = self.events.lock().unwrap();
-        events.push_back(Event { event, payload });
+    pub fn get_sender(&self) -> Sender<(GameEvent, Payload)> {
+        self.tx.clone()
     }
 
     pub fn start(&self) {
         let registry = Arc::clone(&self.register);
         loop {
-            let event_opt = {
-                let mut events = self.events.lock().unwrap();
-                events.pop_front()
-            };
-
-            if let Some(event) = event_opt {
-                let registry = registry.lock().unwrap();
-                if let Some(handlers) = registry.get(&event.event) {
-                    for handler in handlers {
-                        handler.handle(&event.event, &event.payload);
+            for rec in &self.rx {
+                if let event = rec {
+                    let registry = registry.lock().unwrap();
+                    if let Some(handlers) = registry.get(&event.0) {
+                        for handler in handlers {
+                            handler.handle(&event.0, &event.1);
+                        }
                     }
                 }
-            } else {
-                // Sleep for a short duration to prevent busy-waiting
-                thread::sleep(std::time::Duration::from_millis(10));
             }
         }
     }
