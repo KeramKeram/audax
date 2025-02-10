@@ -3,16 +3,15 @@ mod game;
 
 use crate::game::{game_event, GameEvent, Dispatcher};
 use macroquad::prelude::*;
-use std::sync::{Arc};
+use std::sync::{mpsc, Arc};
 
 #[macroquad::main("Grid Example")]
 async fn main() {
     let board = display::Board::new();
-    let mut dispatcher = Dispatcher::new();
+    let (tx, rx) = mpsc::channel();
     let handler = Arc::new(crate::game::MouseClickHandler {});
     let loop_thread = std::thread::spawn(move || {
-        let event_loop = Arc::new(crate::game::EventLoop::new(vec![]));
-        dispatcher.tx = event_loop.get_sender();
+        let event_loop = crate::game::EventLoop::new(rx, vec![]);
         event_loop.register_handler(GameEvent::TileClicked, handler.clone());
         event_loop.start();
     });
@@ -25,7 +24,7 @@ async fn main() {
             let my_vec: Vec<u8> = vec![10, 20];
             //event_loop.add_event(game_event::GameEvent::TileClicked {
             //}, my_vec);
-            dispatcher.tx.send((GameEvent::TileClicked, my_vec)).unwrap();
+            tx.send((GameEvent::TileClicked, my_vec)).unwrap();
             print!("Mouse clicked at ({}, {})\n", mouse_x, mouse_y);
         }
 

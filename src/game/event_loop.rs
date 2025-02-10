@@ -26,15 +26,13 @@ impl Dispatcher {
 
 pub struct EventLoop {
     pub register: Arc<Mutex<HashMap<GameEvent, Vec<Arc<dyn Handler>>>>>,
-    tx: Sender<(GameEvent, Payload)>,
     rx: Receiver<(GameEvent, Payload)>,
 }
 
 impl EventLoop {
-    pub fn new(tiles: Vec<GameEvent>) -> Self {
-        let (tx, rx) = mpsc::channel();
+    pub fn new(rx: Receiver<(GameEvent, Payload)>, tiles: Vec<GameEvent>) -> Self {
         EventLoop {
-            register: Arc::new(Mutex::new(HashMap::new())), tx, rx
+            register: Arc::new(Mutex::new(HashMap::new())), rx
         }
     }
 
@@ -42,10 +40,6 @@ impl EventLoop {
         let mut registry = self.register.lock().unwrap();
         registry.entry(event).or_insert_with(Vec::new).push(handler);
     }
-    pub fn get_sender(&self) -> Sender<(GameEvent, Payload)> {
-        self.tx.clone()
-    }
-
     pub fn start(&self) {
         let registry = Arc::clone(&self.register);
         loop {
