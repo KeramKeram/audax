@@ -1,7 +1,7 @@
+use std::sync::mpsc::{self, Receiver};
 use crate::game::GameEvent;
 use std::sync::{Arc, Mutex};
-use std::{collections::HashMap, thread};
-use std::collections::VecDeque;
+use std::{collections::HashMap};
 
 pub type Payload = Vec<u8>;
 pub trait Handler: Send + Sync {
@@ -12,20 +12,16 @@ pub struct Event {
     pub event: GameEvent,
     pub payload: Payload
 }
-pub struct Dispatcher {
-    registry: Arc<Mutex<HashMap<GameEvent, Vec<Arc<dyn Handler>>>>>,
-}
-#[derive(Clone)]
+
 pub struct EventLoop {
     pub register: Arc<Mutex<HashMap<GameEvent, Vec<Arc<dyn Handler>>>>>,
-    pub events: Arc<Mutex<VecDeque<Event>>>
+    rx: Receiver<(GameEvent, Payload)>,
 }
 
 impl EventLoop {
-    pub fn new(tiles: Vec<GameEvent>) -> Self {
+    pub fn new(rx: Receiver<(GameEvent, Payload)>, tiles: Vec<GameEvent>) -> Self {
         EventLoop {
-            register: Arc::new(Mutex::new(HashMap::new())),
-            events: Arc::new(Mutex::new(VecDeque::new())),
+            register: Arc::new(Mutex::new(HashMap::new())), rx
         }
     }
 
@@ -33,29 +29,17 @@ impl EventLoop {
         let mut registry = self.register.lock().unwrap();
         registry.entry(event).or_insert_with(Vec::new).push(handler);
     }
-    pub fn add_event(&self, event: GameEvent, payload: Payload) {
-        let mut events = self.events.lock().unwrap();
-        events.push_back(Event { event, payload });
-    }
-
     pub fn start(&self) {
         let registry = Arc::clone(&self.register);
         loop {
-            let event_opt = {
-                let mut events = self.events.lock().unwrap();
-                events.pop_front()
-            };
-
-            if let Some(event) = event_opt {
+            for rec in &self.rx {
+                let event = rec;
                 let registry = registry.lock().unwrap();
-                if let Some(handlers) = registry.get(&event.event) {
+                if let Some(handlers) = registry.get(&event.0) {
                     for handler in handlers {
-                        handler.handle(&event.event, &event.payload);
+                        handler.handle(&event.0, &event.1);
                     }
                 }
-            } else {
-                // Sleep for a short duration to prevent busy-waiting
-                thread::sleep(std::time::Duration::from_millis(10));
             }
         }
     }
@@ -79,12 +63,13 @@ mod tests {
 
     #[test]
     fn test_register_handler() {
-        let mut event_loop = EventLoop::new(vec![]);
+        let (tx, rx) = mpsc::channel();
+        let mut event_loop = EventLoop::new(rx,vec![]);
         let handler = Arc::new(TestHandler {
             called: Arc::new(Mutex::new(false)),
         });
 
-        event_loop.register_handler(GameEvent::TileClicked, handler.clone());
+        event_loop.register_handler(GameEvent::TileClicked, handler);
 
         let registry = event_loop.register.lock().unwrap();
         assert!(registry.contains_key(&GameEvent::TileClicked));
@@ -92,31 +77,19 @@ mod tests {
     }
 
     #[test]
-    fn test_add_event() {
-        let mut event_loop = EventLoop::new(vec![]);
-        event_loop.add_event(GameEvent::TileClicked, vec![1, 2, 3]);
-
-        let events = event_loop.events.lock().unwrap();
-        assert_eq!(events.len(), 1);
-        assert_eq!(events[0].event, GameEvent::TileClicked);
-        assert_eq!(events[0].payload, vec![1, 2, 3]);
-    }
-
-    #[test]
     fn test_event_handling() {
-        let mut event_loop = EventLoop::new(vec![]);
+        let (tx, rx) = mpsc::channel();
+        let mut event_loop = EventLoop::new(rx,vec![]);
         let called = Arc::new(Mutex::new(false));
         let handler = Arc::new(TestHandler { called: called.clone() });
 
-        event_loop.register_handler(GameEvent::TileClicked, handler.clone());
-        event_loop.add_event(GameEvent::TileClicked, vec![]);
+        event_loop.register_handler(GameEvent::TileClicked, handler);
 
         // Run the event loop in a separate thread to avoid blocking
-        let event_loop_clone = event_loop.clone();
         let handle = std::thread::spawn(move || {
-            event_loop_clone.start();
+            event_loop.start();
         });
-
+        tx.send((GameEvent::TileClicked, vec![])).unwrap();
         // Give the event loop some time to process the event
         std::thread::sleep(std::time::Duration::from_millis(100));
 
@@ -128,8 +101,3 @@ mod tests {
         handle.thread().unpark();
     }
 }
-
-//1. Dodać rejestrację handlerów
-//2. Dodać wywołanie handlerów
-//3. Dodać obsługę zdarzeń
-// https://dev.to/luisccc/learning-by-doing-event-loop-in-rust-hf1

@@ -1,0 +1,8 @@
+[package]
+name = "audax"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+macroquad = { package = "macroquad", version = "0.4.13" }
+bincode = "2.0.0-rc.3"
