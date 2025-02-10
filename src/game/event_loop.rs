@@ -75,12 +75,13 @@ mod tests {
 
     #[test]
     fn test_register_handler() {
-        let mut event_loop = EventLoop::new(vec![]);
+        let (tx, rx) = mpsc::channel();
+        let mut event_loop = EventLoop::new(rx,vec![]);
         let handler = Arc::new(TestHandler {
             called: Arc::new(Mutex::new(false)),
         });
 
-        event_loop.register_handler(GameEvent::TileClicked, handler.clone());
+        event_loop.register_handler(GameEvent::TileClicked, handler);
 
         let registry = event_loop.register.lock().unwrap();
         assert!(registry.contains_key(&GameEvent::TileClicked));
@@ -88,31 +89,19 @@ mod tests {
     }
 
     #[test]
-    fn test_add_event() {
-        let mut event_loop = EventLoop::new(vec![]);
-        event_loop.add_event(GameEvent::TileClicked, vec![1, 2, 3]);
-
-        let events = event_loop.events.lock().unwrap();
-        assert_eq!(events.len(), 1);
-        assert_eq!(events[0].event, GameEvent::TileClicked);
-        assert_eq!(events[0].payload, vec![1, 2, 3]);
-    }
-
-    #[test]
     fn test_event_handling() {
-        let mut event_loop = EventLoop::new(vec![]);
+        let (tx, rx) = mpsc::channel();
+        let mut event_loop = EventLoop::new(rx,vec![]);
         let called = Arc::new(Mutex::new(false));
         let handler = Arc::new(TestHandler { called: called.clone() });
 
-        event_loop.register_handler(GameEvent::TileClicked, handler.clone());
-        event_loop.add_event(GameEvent::TileClicked, vec![]);
+        event_loop.register_handler(GameEvent::TileClicked, handler);
 
         // Run the event loop in a separate thread to avoid blocking
-        let event_loop_clone = event_loop.clone();
         let handle = std::thread::spawn(move || {
-            event_loop_clone.start();
+            event_loop.start();
         });
-
+        tx.send((GameEvent::TileClicked, vec![])).unwrap();
         // Give the event loop some time to process the event
         std::thread::sleep(std::time::Duration::from_millis(100));
 
@@ -124,8 +113,3 @@ mod tests {
         handle.thread().unpark();
     }
 }
-
-//1. Dodać rejestrację handlerów
-//2. Dodać wywołanie handlerów
-//3. Dodać obsługę zdarzeń
-// https://dev.to/luisccc/learning-by-doing-event-loop-in-rust-hf1
