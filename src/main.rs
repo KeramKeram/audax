@@ -1,7 +1,7 @@
 mod display;
 mod game;
 
-use crate::game::{game_event, GameEvent, Dispatcher};
+use crate::game::{GameEvent};
 use macroquad::prelude::*;
 use std::sync::{mpsc, Arc};
 

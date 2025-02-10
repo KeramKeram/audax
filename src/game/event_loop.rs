@@ -1,7 +1,7 @@
-use std::sync::mpsc::{self, Sender, Receiver};
+use std::sync::mpsc::{self, Receiver};
 use crate::game::GameEvent;
 use std::sync::{Arc, Mutex};
-use std::{collections::HashMap, thread};
+use std::{collections::HashMap};
 
 pub type Payload = Vec<u8>;
 pub trait Handler: Send + Sync {
@@ -11,17 +11,6 @@ pub trait Handler: Send + Sync {
 pub struct Event {
     pub event: GameEvent,
     pub payload: Payload
-}
-#[derive(Clone)]
-pub struct Dispatcher {
-    pub tx: Sender<(GameEvent, Payload)>,
-}
-
-impl Dispatcher {
-    pub fn new() -> Self {
-        let (tx, _rx) = mpsc::channel();
-        Self { tx }
-    }
 }
 
 pub struct EventLoop {
@@ -44,12 +33,11 @@ impl EventLoop {
         let registry = Arc::clone(&self.register);
         loop {
             for rec in &self.rx {
-                if let event = rec {
-                    let registry = registry.lock().unwrap();
-                    if let Some(handlers) = registry.get(&event.0) {
-                        for handler in handlers {
-                            handler.handle(&event.0, &event.1);
-                        }
+                let event = rec;
+                let registry = registry.lock().unwrap();
+                if let Some(handlers) = registry.get(&event.0) {
+                    for handler in handlers {
+                        handler.handle(&event.0, &event.1);
                     }
                 }
             }
