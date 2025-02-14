@@ -6,43 +6,48 @@ pub struct Board {
     screen_width: f32,
     screen_height: f32,
     pub tiles: Vec<Tile>,
+    grid_size: usize,
+    square_size: f32,
 }
 
 impl Board {
-    const GRID_SIZE: usize = 10;
-    const SQUARE_SIZE: f32 = 50.0;
+
     pub fn new() -> Self {
-        let tiles = vec![Tile::new(TileType::Empty); Self::GRID_SIZE * Self::GRID_SIZE];
+        let grid_size = 10;
+        let square_size = 50.0;
+        let tiles = vec![Tile::new(TileType::Empty); grid_size * grid_size];
         let screen_width = screen_width();
         let screen_height = screen_height();
         Self {
             screen_width,
             screen_height,
             tiles,
+            grid_size,
+            square_size
         }
     }
 
     pub fn display(&self) {
         clear_background(WHITE);
 
-        let grid_width = Board::GRID_SIZE as f32 * Board::SQUARE_SIZE;
-        let grid_height = Board::GRID_SIZE as f32 * Board::SQUARE_SIZE;
+        let grid_width = self.grid_size as f32 * self.square_size;
+        let grid_height = self.grid_size as f32 * self.square_size;
         let offset_x = (self.screen_width - grid_width) / 2.0;
         let offset_y = (self.screen_height - grid_height) / 2.0;
 
-        for row in 0..Board::GRID_SIZE {
-            for col in 0..Board::GRID_SIZE {
-                let x = offset_x + col as f32 * Board::SQUARE_SIZE;
-                let y = offset_y + row as f32 * Board::SQUARE_SIZE;
+        for row in 0..self.grid_size {
+            for col in 0..self.grid_size {
+                let x = offset_x + col as f32 * self.square_size;
+                let y = offset_y + row as f32 * self.square_size;
 
-                draw_rectangle_lines(x, y, Board::SQUARE_SIZE, Board::SQUARE_SIZE, 2.0, BLACK);
+                draw_rectangle_lines(x, y, self.square_size, self.square_size, 2.0, BLACK);
             }
         }
     }
 
     pub fn get_tile(&self, x: f32, y: f32) -> Option<&Tile> {
-        let grid_width = Board::GRID_SIZE as f32 * Board::SQUARE_SIZE;
-        let grid_height = Board::GRID_SIZE as f32 * Board::SQUARE_SIZE;
+        let grid_width = self.grid_size as f32 * self.square_size;
+        let grid_height = self.grid_size as f32 * self.square_size;
         let offset_x = (self.screen_width - grid_width) / 2.0;
         let offset_y = (self.screen_height - grid_height) / 2.0;
 
@@ -50,10 +55,10 @@ impl Board {
             return None;
         }
 
-        let col = ((x - offset_x) / Board::SQUARE_SIZE) as usize;
-        let row = ((y - offset_y) / Board::SQUARE_SIZE) as usize;
+        let col = ((x - offset_x) / self.square_size) as usize;
+        let row = ((y - offset_y) / self.square_size) as usize;
 
-        self.tiles.get(row * Board::GRID_SIZE + col)
+        self.tiles.get(row * self.grid_size + col)
     }
 
 /*    pub fn handle_event(&mut self, event: GameEvent) {
