@@ -1,10 +1,16 @@
 use super::tile::{Tile, TileType};
 use macroquad::color::{BLACK, WHITE};
 use macroquad::prelude::{clear_background, draw_rectangle_lines, screen_height, screen_width};
+use serde::{Serialize, Deserialize};
 
-pub struct Board {
+#[derive(Serialize, Deserialize)]
+struct WindowSize {
     screen_width: f32,
     screen_height: f32,
+}
+
+pub struct Board {
+    window_size: WindowSize,
     pub tiles: Vec<Tile>,
     grid_size: usize,
     square_size: f32,
@@ -12,15 +18,16 @@ pub struct Board {
 
 impl Board {
 
-    pub fn new() -> Self {
+    pub fn new(width: f32, height: f32) -> Self {
         let grid_size = 10;
         let square_size = 50.0;
+        let window_size = WindowSize {
+            screen_width: width,
+            screen_height: height,
+        };
         let tiles = vec![Tile::new(TileType::Empty); grid_size * grid_size];
-        let screen_width = screen_width();
-        let screen_height = screen_height();
         Self {
-            screen_width,
-            screen_height,
+            window_size,
             tiles,
             grid_size,
             square_size
@@ -32,8 +39,8 @@ impl Board {
 
         let grid_width = self.grid_size as f32 * self.square_size;
         let grid_height = self.grid_size as f32 * self.square_size;
-        let offset_x = (self.screen_width - grid_width) / 2.0;
-        let offset_y = (self.screen_height - grid_height) / 2.0;
+        let offset_x = (self.window_size.screen_width - grid_width) / 2.0;
+        let offset_y = (self.window_size.screen_height - grid_height) / 2.0;
 
         for row in 0..self.grid_size {
             for col in 0..self.grid_size {
@@ -48,8 +55,8 @@ impl Board {
     pub fn get_tile(&self, x: f32, y: f32) -> Option<&Tile> {
         let grid_width = self.grid_size as f32 * self.square_size;
         let grid_height = self.grid_size as f32 * self.square_size;
-        let offset_x = (self.screen_width - grid_width) / 2.0;
-        let offset_y = (self.screen_height - grid_height) / 2.0;
+        let offset_x = (self.window_size.screen_width - grid_width) / 2.0;
+        let offset_y = (self.window_size.screen_height - grid_height) / 2.0;
 
         if x < offset_x || x > offset_x + grid_width || y < offset_y || y > offset_y + grid_height {
             return None;
