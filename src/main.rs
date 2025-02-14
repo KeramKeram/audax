@@ -1,7 +1,9 @@
 mod display;
 mod game;
 
+use crate::display::WindowSize;
 use crate::game::GameEvent;
+use bincode::{Decode, Encode};
 use macroquad::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::sync::{mpsc, Arc};
@@ -14,9 +16,11 @@ async fn main() {
     let board = display::Board::new(screen_width, screen_height);
     let (tx, rx) = mpsc::channel();
     let handler = Arc::new(crate::game::MouseClickHandler {});
+    let handler_window_size = Arc::new(crate::game::WindowResizeHandler {});
     let loop_thread = std::thread::spawn(move || {
         let event_loop = crate::game::EventLoop::new(rx, vec![]);
         event_loop.register_handler(GameEvent::TileClicked, handler.clone());
+        event_loop.register_handler(GameEvent::WindowResized, handler_window_size.clone());
         event_loop.start();
     });
 
@@ -37,7 +41,13 @@ async fn main() {
         {
             screen_width = macroquad::window::screen_width();
             screen_height = macroquad::window::screen_height();
-            //tx.send((GameEvent::TileClicked, my_vec)).unwrap();
+            let window_size = WindowSize {
+                screen_width: screen_width,
+                screen_height: screen_height,
+            };
+            let encoded: Vec<u8> =
+                bincode::encode_to_vec(&window_size, bincode::config::standard()).unwrap();
+            tx.send((GameEvent::WindowResized, encoded)).unwrap();
         }
 
         next_frame().await

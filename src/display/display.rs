@@ -1,12 +1,13 @@
 use super::tile::{Tile, TileType};
+use bincode::{config, Decode, Encode};
 use macroquad::color::{BLACK, WHITE};
 use macroquad::prelude::{clear_background, draw_rectangle_lines, screen_height, screen_width};
-use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Deserialize)]
-struct WindowSize {
-    screen_width: f32,
-    screen_height: f32,
+#[derive(Encode, Decode, PartialEq, Debug)]
+
+pub struct WindowSize {
+    pub screen_width: f32,
+    pub screen_height: f32,
 }
 
 pub struct Board {
@@ -17,7 +18,6 @@ pub struct Board {
 }
 
 impl Board {
-
     pub fn new(width: f32, height: f32) -> Self {
         let grid_size = 10;
         let square_size = 50.0;
@@ -30,7 +30,7 @@ impl Board {
             window_size,
             tiles,
             grid_size,
-            square_size
+            square_size,
         }
     }
 
@@ -67,14 +67,4 @@ impl Board {
 
         self.tiles.get(row * self.grid_size + col)
     }
-
-/*    pub fn handle_event(&mut self, event: GameEvent) {
-        match event {
-            GameEvent::TileClicked { x, y } => {
-                if let Some(tile) = self.get_tile(x as f32, y as f32) {
-                   print!("Handle event: {:?}", tile);
-                }
-            }
-        }
-    }*/
 }
