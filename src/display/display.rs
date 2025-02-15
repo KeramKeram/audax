@@ -1,14 +1,7 @@
 use super::tile::{Tile, TileType};
-use bincode::{config, Decode, Encode};
 use macroquad::color::{BLACK, WHITE};
-use macroquad::prelude::{clear_background, draw_rectangle_lines, screen_height, screen_width};
-
-#[derive(Encode, Decode, PartialEq, Debug)]
-
-pub struct WindowSize {
-    pub screen_width: f32,
-    pub screen_height: f32,
-}
+use macroquad::prelude::{clear_background, draw_rectangle_lines};
+use crate::common::display::WindowSize;
 
 pub struct Board {
     window_size: WindowSize,

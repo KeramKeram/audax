@@ -1,9 +1,6 @@
-use crate::display::WindowSize;
+use crate::common::display::WindowSize;
 use crate::game::event_loop::{Handler, Payload};
 use crate::game::GameEvent;
-use bincode::{Decode, Encode};
-use serde::{Deserialize, Serialize};
-
 pub struct MouseClickHandler {}
 
 impl Handler for MouseClickHandler {

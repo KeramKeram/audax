@@ -1,11 +1,10 @@
 mod display;
 mod game;
+mod common;
 
-use crate::display::WindowSize;
+use crate::common::display::WindowSize;
 use crate::game::GameEvent;
-use bincode::{Decode, Encode};
 use macroquad::prelude::*;
-use serde::{Deserialize, Serialize};
 use std::sync::{mpsc, Arc};
 
 #[macroquad::main("Grid Example")]
@@ -36,8 +35,8 @@ async fn main() {
             print!("Mouse clicked at ({}, {})\n", mouse_x, mouse_y);
         }
 
-        if (screen_width != macroquad::window::screen_width()
-            || screen_height != macroquad::window::screen_height())
+        if screen_width != macroquad::window::screen_width()
+            || screen_height != macroquad::window::screen_height()
         {
             screen_width = macroquad::window::screen_width();
             screen_height = macroquad::window::screen_height();
