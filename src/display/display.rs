@@ -60,4 +60,11 @@ impl Board {
 
         self.tiles.get(row * self.grid_size + col)
     }
+
+    pub fn update_screen_size(&mut self, width: f32, height: f32) {
+        self.window_size = WindowSize {
+            screen_width: width,
+            screen_height: height,
+        };
+    }
 }

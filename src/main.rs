@@ -12,7 +12,7 @@ async fn main() {
     let mut screen_height: f32 = macroquad::window::screen_height();
     let mut screen_width: f32 = macroquad::window::screen_width();
 
-    let board = display::Board::new(screen_width, screen_height);
+    let mut board = display::Board::new(screen_width, screen_height);
     let (tx, rx) = mpsc::channel();
     let handler = Arc::new(crate::game::MouseClickHandler {});
     let handler_window_size = Arc::new(crate::game::WindowResizeHandler {});
@@ -38,15 +38,7 @@ async fn main() {
         if screen_width != macroquad::window::screen_width()
             || screen_height != macroquad::window::screen_height()
         {
-            screen_width = macroquad::window::screen_width();
-            screen_height = macroquad::window::screen_height();
-            let window_size = WindowSize {
-                screen_width: screen_width,
-                screen_height: screen_height,
-            };
-            let encoded: Vec<u8> =
-                bincode::encode_to_vec(&window_size, bincode::config::standard()).unwrap();
-            tx.send((GameEvent::WindowResized, encoded)).unwrap();
+            board.update_screen_size(screen_width, screen_height);
         }
 
         next_frame().await
