@@ -12,7 +12,7 @@ pub struct Board {
 
 impl Board {
     pub fn new(width: f32, height: f32) -> Self {
-        let grid_size = 10;
+        let grid_size = 12;
         let square_size = 50.0;
         let window_size = WindowSize {
             screen_width: width,
