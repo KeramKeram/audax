@@ -66,5 +66,8 @@ impl Board {
             screen_width: width,
             screen_height: height,
         };
+
+        let target_grid_size = f32::min(width, height) * 0.8;
+        self.square_size = target_grid_size / self.grid_size as f32;
     }
 }

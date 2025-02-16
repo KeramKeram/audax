@@ -9,8 +9,8 @@ use std::sync::{mpsc, Arc};
 
 #[macroquad::main("Grid Example")]
 async fn main() {
-    let mut screen_height: f32 = macroquad::window::screen_height();
-    let mut screen_width: f32 = macroquad::window::screen_width();
+    let mut screen_height: f32 = 800.0;
+    let mut screen_width: f32 =600.0;
 
     let mut board = display::Board::new(screen_width, screen_height);
     let (tx, rx) = mpsc::channel();
@@ -38,6 +38,8 @@ async fn main() {
         if screen_width != macroquad::window::screen_width()
             || screen_height != macroquad::window::screen_height()
         {
+            screen_width = macroquad::window::screen_width();
+            screen_height = macroquad::window::screen_height();
             board.update_screen_size(screen_width, screen_height);
         }
 
