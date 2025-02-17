@@ -18,7 +18,7 @@ async fn main() {
 
     loop {
         board.display();
-
+        board.display_battle_interface();
         if is_mouse_button_pressed(MouseButton::Left) {
             let (mouse_x, mouse_y) = mouse_position();
             let my_vec: Vec<u8> = vec![10, 20];

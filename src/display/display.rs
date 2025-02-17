@@ -1,11 +1,28 @@
 use super::tile::{Tile, TileType};
 use macroquad::color::{BLACK, WHITE};
-use macroquad::prelude::{clear_background, draw_rectangle_lines, screen_height, screen_width};
+use macroquad::prelude::{clear_background, draw_rectangle_lines, screen_height, screen_width, load_texture, vec2, Texture2D, Image};
+use macroquad::ui::{
+    hash, root_ui,
+    widgets::{self, Group},
+    Drag, Ui,
+};
+use std::fs::File;
+use std::io::Read;
 
 pub struct Board {
     screen_width: f32,
     screen_height: f32,
     pub tiles: Vec<Tile>,
+    texture2d: Texture2D,
+}
+
+fn load_texture_sync(path: &str) -> Texture2D {
+    let mut file = File::open(path).expect("Can't open file.");
+    let mut buffer = Vec::new();
+    file.read_to_end(&mut buffer).expect("Read error.");
+
+    let image = Image::from_file_with_format(&buffer, None).unwrap();
+    Texture2D::from_image(&image)
 }
 
 impl Board {
@@ -15,10 +32,12 @@ impl Board {
         let tiles = vec![Tile::new(TileType::Empty); Self::GRID_SIZE * Self::GRID_SIZE];
         let screen_width = screen_width();
         let screen_height = screen_height();
+        let texture2d = load_texture_sync("button.png");
         Self {
             screen_width,
             screen_height,
             tiles,
+            texture2d
         }
     }
 
@@ -40,6 +59,15 @@ impl Board {
         }
     }
 
+    pub fn display_battle_interface(&self) {
+        if widgets::Button::new(self.texture2d.clone())
+            .size(vec2(100., 100.))
+            .ui(&mut *root_ui())
+        {
+            println!("Textured button clicked!");
+        }
+    }
+
     pub fn get_tile(&self, x: f32, y: f32) -> Option<&Tile> {
         let grid_width = Board::GRID_SIZE as f32 * Board::SQUARE_SIZE;
         let grid_height = Board::GRID_SIZE as f32 * Board::SQUARE_SIZE;
@@ -56,13 +84,4 @@ impl Board {
         self.tiles.get(row * Board::GRID_SIZE + col)
     }
 
-/*    pub fn handle_event(&mut self, event: GameEvent) {
-        match event {
-            GameEvent::TileClicked { x, y } => {
-                if let Some(tile) = self.get_tile(x as f32, y as f32) {
-                   print!("Handle event: {:?}", tile);
-                }
-            }
-        }
-    }*/
 }
