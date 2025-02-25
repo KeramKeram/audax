@@ -2,4 +2,5 @@
 pub enum GameEvent {
     TileClicked,
     WindowResized,
+    MouseCliked
 }
