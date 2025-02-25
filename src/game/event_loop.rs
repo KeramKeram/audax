@@ -1,7 +1,7 @@
-use std::sync::mpsc::{self, Receiver};
 use crate::game::GameEvent;
+use std::collections::HashMap;
+use std::sync::mpsc::{Receiver};
 use std::sync::{Arc, Mutex};
-use std::{collections::HashMap};
 
 pub type Payload = Vec<u8>;
 pub trait Handler: Send + Sync {
@@ -10,7 +10,7 @@ pub trait Handler: Send + Sync {
 
 pub struct Event {
     pub event: GameEvent,
-    pub payload: Payload
+    pub payload: Payload,
 }
 
 pub struct EventLoop {
@@ -21,7 +21,8 @@ pub struct EventLoop {
 impl EventLoop {
     pub fn new(rx: Receiver<(GameEvent, Payload)>, tiles: Vec<GameEvent>) -> Self {
         EventLoop {
-            register: Arc::new(Mutex::new(HashMap::new())), rx
+            register: Arc::new(Mutex::new(HashMap::new())),
+            rx,
         }
     }
 
@@ -64,7 +65,7 @@ mod tests {
     #[test]
     fn test_register_handler() {
         let (tx, rx) = mpsc::channel();
-        let mut event_loop = EventLoop::new(rx,vec![]);
+        let mut event_loop = EventLoop::new(rx, vec![]);
         let handler = Arc::new(TestHandler {
             called: Arc::new(Mutex::new(false)),
         });
@@ -79,9 +80,11 @@ mod tests {
     #[test]
     fn test_event_handling() {
         let (tx, rx) = mpsc::channel();
-        let mut event_loop = EventLoop::new(rx,vec![]);
+        let mut event_loop = EventLoop::new(rx, vec![]);
         let called = Arc::new(Mutex::new(false));
-        let handler = Arc::new(TestHandler { called: called.clone() });
+        let handler = Arc::new(TestHandler {
+            called: called.clone(),
+        });
 
         event_loop.register_handler(GameEvent::TileClicked, handler);
 
