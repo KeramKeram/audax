@@ -39,7 +39,7 @@ impl Board {
             screen_width: width,
             screen_height: height,
         };
-        let tiles = vec![Tile::new(TileType::Empty, "empty/path"); grid_size * grid_size];
+        let tiles = vec![Tile::new(TileType::Empty, "data/graphics/general/empty_tail.png"); grid_size * grid_size];
         let battle_icons = BattleIcons {
             attack: load_texture_sync("data/graphics/ui/battle/attack.png"),
             defend: load_texture_sync("data/graphics/ui/battle/defence.png"),
