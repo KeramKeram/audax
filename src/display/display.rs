@@ -77,36 +77,38 @@ impl Board {
     }
 
     pub fn display_battle_interface(&self) {
+        let x = 80.0;
+        let y = 80.0;
         if widgets::Button::new(self.battle_icons.magic.clone())
-            .size(vec2(80., 80.))
+            .size(vec2(x, y))
             .ui(&mut *root_ui())
         {
             println!("Textured button clicked!");
         }
 
         if widgets::Button::new(self.battle_icons.attack.clone())
-            .size(vec2(80., 80.))
+            .size(vec2(x, y))
             .ui(&mut *root_ui())
         {
             println!("Textured button clicked!");
         }
 
         if widgets::Button::new(self.battle_icons.defend.clone())
-            .size(vec2(80., 80.))
+            .size(vec2(x, y))
             .ui(&mut *root_ui())
         {
             println!("Textured button clicked!");
         }
 
         if widgets::Button::new(self.battle_icons.wait.clone())
-            .size(vec2(80., 80.))
+            .size(vec2(x, y))
             .ui(&mut *root_ui())
         {
             println!("Textured button clicked!");
         }
 
         if widgets::Button::new(self.battle_icons.run.clone())
-            .size(vec2(80., 80.))
+            .size(vec2(x, y))
             .position(vec2(self.window_size.screen_width - 80.0, 0.0))
             .ui(&mut *root_ui())
         {
@@ -114,7 +116,7 @@ impl Board {
         }
 
         if widgets::Button::new(self.battle_icons.negotiate.clone())
-            .size(vec2(80., 80.))
+            .size(vec2(x, y))
             .position(vec2(self.window_size.screen_width - 80.0, 80.0))
             .ui(&mut *root_ui())
         {
@@ -122,7 +124,7 @@ impl Board {
         }
 
         if widgets::Button::new(self.battle_icons.system.clone())
-            .size(vec2(80., 80.))
+            .size(vec2(x, y))
             .position(vec2(self.window_size.screen_width - 80.0, 160.0))
             .ui(&mut *root_ui())
         {
