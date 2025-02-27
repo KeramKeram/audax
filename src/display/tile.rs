@@ -1,21 +1,26 @@
+use macroquad::prelude::Texture2D;
+use crate::common::display::texture::load_texture_sync;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum TileType {
     Empty,
     Obstacle,
     SpawnPoint,
+    MyUnit,
+    EnemyUnit
 }
 
 #[derive(Debug, Clone)]
 pub struct Tile {
     pub tile_type: TileType,
-    pub occupied: bool,
+    texture: Texture2D,
 }
 
 impl Tile {
-    pub fn new(tile_type: TileType) -> Self {
+    pub fn new(tile_type: TileType, texture_path: &str) -> Self {
         Self {
-            tile_type,
-            occupied: false,
+            tile_type : tile_type,
+            texture : load_texture_sync(texture_path)
         }
     }
 }
