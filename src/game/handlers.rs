@@ -1,11 +1,15 @@
+use bincode::{config};
 use crate::common::display::WindowSize;
+use crate::common::io::MousePosition;
 use crate::game::event_loop::{Handler, Payload};
 use crate::game::GameEvent;
 pub struct MouseClickHandler {}
 
 impl Handler for MouseClickHandler {
     fn handle(&self, event: &GameEvent, payload: &Payload) {
-        println!("Mouse clicked Event Loop!");
+        let config = config::standard();
+        let (decoded, len): (MousePosition, usize) = bincode::decode_from_slice(&payload[..], config).unwrap();
+        println!("Mouse clicked Event Loop! {}, {}", decoded.0, decoded.1);
     }
 }
 

@@ -2,10 +2,11 @@ mod display;
 mod game;
 mod common;
 
-use crate::common::display::WindowSize;
+use crate::common::io::MousePosition;
 use crate::game::GameEvent;
 use macroquad::prelude::*;
 use std::sync::{mpsc, Arc};
+use bincode::{config, Decode, Encode};
 
 #[macroquad::main("Grid Example")]
 async fn main() {
@@ -28,8 +29,10 @@ async fn main() {
         board.display_battle_interface();
         if is_mouse_button_pressed(MouseButton::Left) {
             let (mouse_x, mouse_y) = mouse_position();
-            let my_vec: Vec<u8> = vec![10, 20];
-            tx.send((GameEvent::MouseCliked, my_vec)).unwrap();
+            let position = MousePosition(mouse_x, mouse_y);
+            let config = config::standard();
+            let encoded: Vec<u8> = bincode::encode_to_vec(&position, config).unwrap();
+            tx.send((GameEvent::MouseCliked, encoded)).unwrap();
             print!("Mouse clicked at ({}, {})\n", mouse_x, mouse_y);
         }
 
