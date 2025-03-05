@@ -132,16 +132,26 @@ impl Board {
         }
     }
 
-    pub fn get_tile(&self, x: f32, y: f32) -> Option<&Tile> {
+    pub fn check_if_is_in_boundries(&self, x: f32, y: f32) -> bool{
         let grid_width = self.grid_size as f32 * self.square_size;
         let grid_height = self.grid_size as f32 * self.square_size;
         let offset_x = (self.window_size.screen_width - grid_width) / 2.0;
         let offset_y = (self.window_size.screen_height - grid_height) / 2.0;
 
         if x < offset_x || x > offset_x + grid_width || y < offset_y || y > offset_y + grid_height {
+            return false;
+        }
+        return true;
+    }
+    pub fn get_tile(&self, x: f32, y: f32) -> Option<&Tile> {
+        if(!self.check_if_is_in_boundries(x, y)) {
             return None;
         }
 
+        let grid_width = self.grid_size as f32 * self.square_size;
+        let grid_height = self.grid_size as f32 * self.square_size;
+        let offset_x = (self.window_size.screen_width - grid_width) / 2.0;
+        let offset_y = (self.window_size.screen_height - grid_height) / 2.0;
         let col = ((x - offset_x) / self.square_size) as usize;
         let row = ((y - offset_y) / self.square_size) as usize;
 
