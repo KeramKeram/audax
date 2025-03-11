@@ -48,3 +48,19 @@ async fn main() {
     }
     loop_thread.join().unwrap();
 }
+
+/*
+1. wysyłamy do loop przyciśnięcie myszy
+2. loop odbiera i przekazuje do handlera
+3. handler odbiera ogarnia co to było
+4. generuje i wysyła do głównego wątku update czyli typ i dane
+5. główny wątek odbiera i ogarnia co to było
+6. np. wyciągamy tail do osobnego wątku
+7. w event loop handler sprawdza czy kliknięto tail, jak tak czy jest jednostka, jak tak to podświetla taile wokół
+6. czyli do głównego wątku idzie info, podswietl_taile, numery taily.
+
+architektura:
+wyciągnij do gamestats m.in tile pewnie plus wielkości
+w main niech konstruktor zwraca tą strukturę
+dostanie się do niej drugi wątek, pola są w aRC
+ */

@@ -1,14 +1,17 @@
-use std::alloc::System;
 use super::tile::{Tile, TileType};
-use macroquad::color::{BLACK, WHITE};
-use macroquad::prelude::{clear_background, draw_rectangle_lines, screen_height, screen_width, load_texture, vec2, Texture2D, Image};
-use macroquad::ui::{
-    hash, root_ui,
-    widgets::{self, Group},
-    Drag, Ui,
-};
 use crate::common::display::WindowSize;
 use crate::common::display::texture::load_texture_sync;
+use macroquad::color::{BLACK, WHITE};
+use macroquad::prelude::{
+    Image, Texture2D, clear_background, draw_rectangle_lines, load_texture, screen_height,
+    screen_width, vec2,
+};
+use macroquad::ui::{
+    Drag, Ui, hash, root_ui,
+    widgets::{self, Group},
+};
+use std::alloc::System;
+use std::sync::{Arc, Mutex};
 
 struct BattleIcons {
     attack: Texture2D,
@@ -20,26 +23,38 @@ struct BattleIcons {
     system: Texture2D,
 }
 
+pub struct GameState {
+    pub tiles: Arc<Mutex<Vec<Tile>>>,
+}
+
+impl GameState {
+    const GRID_SIZE: usize = 12;
+}
 
 pub struct Board {
     window_size: WindowSize,
-    pub tiles: Vec<Tile>,
-    grid_size: usize,
+    pub game_state: GameState,
     square_size: f32,
     battle_icons: BattleIcons,
 }
 
 impl Board {
-    const GRID_SIZE: usize = 10;
     const SQUARE_SIZE: f32 = 50.0;
     pub fn new(width: f32, height: f32) -> Self {
-        let grid_size = 12;
-        let square_size = 50.0;
+        let square_size = Self::SQUARE_SIZE;
         let window_size = WindowSize {
             screen_width: width,
             screen_height: height,
         };
-        let tiles = vec![Tile::new(TileType::Empty, "data/graphics/general/empty_tail.png"); grid_size * grid_size];
+        let game_state = GameState {
+            tiles: Arc::new(Mutex::new(vec![
+                Tile::new(
+                    TileType::Empty,
+                    "data/graphics/general/empty_tail.png"
+                );
+                GameState::GRID_SIZE * GameState::GRID_SIZE
+            ])),
+        };
         let battle_icons = BattleIcons {
             attack: load_texture_sync("data/graphics/ui/battle/attack.png"),
             defend: load_texture_sync("data/graphics/ui/battle/defence.png"),
@@ -51,23 +66,22 @@ impl Board {
         };
         Self {
             window_size,
-            tiles,
-            grid_size,
+            game_state: game_state,
             square_size,
-            battle_icons
+            battle_icons,
         }
     }
 
     pub fn display(&self) {
         clear_background(WHITE);
 
-        let grid_width = self.grid_size as f32 * self.square_size;
-        let grid_height = self.grid_size as f32 * self.square_size;
+        let grid_width = GameState::GRID_SIZE as f32 * self.square_size;
+        let grid_height = GameState::GRID_SIZE as f32 * self.square_size;
         let offset_x = (self.window_size.screen_width - grid_width) / 2.0;
         let offset_y = (self.window_size.screen_height - grid_height) / 2.0;
 
-        for row in 0..self.grid_size {
-            for col in 0..self.grid_size {
+        for row in 0..GameState::GRID_SIZE {
+            for col in 0..GameState::GRID_SIZE {
                 let x = offset_x + col as f32 * self.square_size;
                 let y = offset_y + row as f32 * self.square_size;
 
@@ -132,9 +146,9 @@ impl Board {
         }
     }
 
-    pub fn check_if_is_in_boundries(&self, x: f32, y: f32) -> bool{
-        let grid_width = self.grid_size as f32 * self.square_size;
-        let grid_height = self.grid_size as f32 * self.square_size;
+    pub fn check_if_is_in_boundries(&self, x: f32, y: f32) -> bool {
+        let grid_width = GameState::GRID_SIZE as f32 * self.square_size;
+        let grid_height = GameState::GRID_SIZE as f32 * self.square_size;
         let offset_x = (self.window_size.screen_width - grid_width) / 2.0;
         let offset_y = (self.window_size.screen_height - grid_height) / 2.0;
 
@@ -143,19 +157,19 @@ impl Board {
         }
         return true;
     }
-    pub fn get_tile(&self, x: f32, y: f32) -> Option<&Tile> {
-        if(!self.check_if_is_in_boundries(x, y)) {
+    pub fn get_tile(&self, x: f32, y: f32) -> Option<Tile> {
+        if (!self.check_if_is_in_boundries(x, y)) {
             return None;
         }
 
-        let grid_width = self.grid_size as f32 * self.square_size;
-        let grid_height = self.grid_size as f32 * self.square_size;
+        let grid_width = GameState::GRID_SIZE as f32 * self.square_size;
+        let grid_height = GameState::GRID_SIZE as f32 * self.square_size;
         let offset_x = (self.window_size.screen_width - grid_width) / 2.0;
         let offset_y = (self.window_size.screen_height - grid_height) / 2.0;
         let col = ((x - offset_x) / self.square_size) as usize;
         let row = ((y - offset_y) / self.square_size) as usize;
-
-        self.tiles.get(row * self.grid_size + col)
+        let num = self.game_state.tiles.lock().unwrap();
+        num.get(row * GameState::GRID_SIZE + col).cloned()
     }
 
     pub fn update_screen_size(&mut self, width: f32, height: f32) {
@@ -165,6 +179,6 @@ impl Board {
         };
 
         let target_grid_size = f32::min(width, height) * 0.8;
-        self.square_size = target_grid_size / self.grid_size as f32;
+        self.square_size = target_grid_size / GameState::GRID_SIZE as f32;
     }
 }
