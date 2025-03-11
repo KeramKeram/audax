@@ -23,6 +23,7 @@ struct BattleIcons {
     system: Texture2D,
 }
 
+#[derive(Clone)]
 pub struct GameState {
     pub tiles: Arc<Mutex<Vec<Tile>>>,
 }
@@ -40,7 +41,7 @@ pub struct Board {
 
 impl Board {
     const SQUARE_SIZE: f32 = 50.0;
-    pub fn new(width: f32, height: f32) -> Self {
+    pub fn new(width: f32, height: f32) -> (Self, GameState) {
         let square_size = Self::SQUARE_SIZE;
         let window_size = WindowSize {
             screen_width: width,
@@ -64,12 +65,12 @@ impl Board {
             negotiate: load_texture_sync("data/graphics/general/hand.png"),
             system: load_texture_sync("data/graphics/general/unit_defence.png"),
         };
-        Self {
+        (Self {
             window_size,
-            game_state: game_state,
+            game_state: game_state.clone(),
             square_size,
             battle_icons,
-        }
+        }, game_state)
     }
 
     pub fn display(&self) {

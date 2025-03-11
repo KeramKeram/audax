@@ -13,7 +13,7 @@ async fn main() {
     let mut screen_height: f32 = 800.0;
     let mut screen_width: f32 =600.0;
 
-    let mut board = display::Board::new(screen_width, screen_height);
+    let (mut board, mut game_stat) = display::Board::new(screen_width, screen_height);
     let (tx, rx) = mpsc::channel();
     let handler_mouse_cliked = Arc::new(crate::game::MouseClickHandler {});
     let handler_window_size = Arc::new(crate::game::WindowResizeHandler {});
