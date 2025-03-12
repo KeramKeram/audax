@@ -19,6 +19,7 @@ impl Handler for MouseClickHandler {
         let config = config::standard();
         let (decoded, len): (MousePosition, usize) = bincode::decode_from_slice(&payload[..], config).unwrap();
         println!("Mouse clicked Event Loop! {}, {}", decoded.0, decoded.1);
+        let mut stats = self.game_state.tiles.lock().unwrap();
     }
 }
 
