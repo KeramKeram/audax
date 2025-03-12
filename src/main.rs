@@ -24,10 +24,10 @@ async fn main() {
         event_loop.register_handler(GameEvent::WindowResized, handler_window_size.clone());
         event_loop.start();
     });
-
+    let mut board_renderer = display::BoardRenderer::new(board.clone());
     loop {
-        board.display();
-        board.display_battle_interface();
+        board_renderer.display();
+        board_renderer.display_battle_interface();
         if is_mouse_button_pressed(MouseButton::Left) {
             let (mouse_x, mouse_y) = mouse_position();
             let position = MousePosition(mouse_x, mouse_y);

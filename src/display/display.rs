@@ -13,6 +13,7 @@ use macroquad::ui::{
 use std::alloc::System;
 use std::sync::{Arc, Mutex};
 
+#[derive(Clone)]
 struct BattleIcons {
     attack: Texture2D,
     defend: Texture2D,
@@ -32,6 +33,7 @@ impl GameState {
     const GRID_SIZE: usize = 12;
 }
 
+#[derive(Clone)]
 pub struct Board {
     window_size: WindowSize,
     pub game_state: GameState,
@@ -73,80 +75,6 @@ impl Board {
         }, game_state)
     }
 
-    pub fn display(&self) {
-        clear_background(WHITE);
-
-        let grid_width = GameState::GRID_SIZE as f32 * self.square_size;
-        let grid_height = GameState::GRID_SIZE as f32 * self.square_size;
-        let offset_x = (self.window_size.screen_width - grid_width) / 2.0;
-        let offset_y = (self.window_size.screen_height - grid_height) / 2.0;
-
-        for row in 0..GameState::GRID_SIZE {
-            for col in 0..GameState::GRID_SIZE {
-                let x = offset_x + col as f32 * self.square_size;
-                let y = offset_y + row as f32 * self.square_size;
-
-                draw_rectangle_lines(x, y, self.square_size, self.square_size, 2.0, BLACK);
-            }
-        }
-    }
-
-    pub fn display_battle_interface(&self) {
-        let x = 80.0;
-        let y = 80.0;
-        if widgets::Button::new(self.battle_icons.magic.clone())
-            .size(vec2(x, y))
-            .ui(&mut *root_ui())
-        {
-            println!("Textured button clicked!");
-        }
-
-        if widgets::Button::new(self.battle_icons.attack.clone())
-            .size(vec2(x, y))
-            .ui(&mut *root_ui())
-        {
-            println!("Textured button clicked!");
-        }
-
-        if widgets::Button::new(self.battle_icons.defend.clone())
-            .size(vec2(x, y))
-            .ui(&mut *root_ui())
-        {
-            println!("Textured button clicked!");
-        }
-
-        if widgets::Button::new(self.battle_icons.wait.clone())
-            .size(vec2(x, y))
-            .ui(&mut *root_ui())
-        {
-            println!("Textured button clicked!");
-        }
-
-        if widgets::Button::new(self.battle_icons.run.clone())
-            .size(vec2(x, y))
-            .position(vec2(self.window_size.screen_width - 80.0, 0.0))
-            .ui(&mut *root_ui())
-        {
-            println!("Textured button clicked!");
-        }
-
-        if widgets::Button::new(self.battle_icons.negotiate.clone())
-            .size(vec2(x, y))
-            .position(vec2(self.window_size.screen_width - 80.0, 80.0))
-            .ui(&mut *root_ui())
-        {
-            println!("Textured button clicked!");
-        }
-
-        if widgets::Button::new(self.battle_icons.system.clone())
-            .size(vec2(x, y))
-            .position(vec2(self.window_size.screen_width - 80.0, 160.0))
-            .ui(&mut *root_ui())
-        {
-            println!("Textured button clicked!");
-        }
-    }
-
     pub fn check_if_is_in_boundries(&self, x: f32, y: f32) -> bool {
         let grid_width = GameState::GRID_SIZE as f32 * self.square_size;
         let grid_height = GameState::GRID_SIZE as f32 * self.square_size;
@@ -181,5 +109,90 @@ impl Board {
 
         let target_grid_size = f32::min(width, height) * 0.8;
         self.square_size = target_grid_size / GameState::GRID_SIZE as f32;
+    }
+}
+
+
+pub struct BoardRenderer {
+    board: Board,
+}
+// TODO: Fix display
+
+impl BoardRenderer {
+    pub fn new(board: Board) -> Self {
+        Self { board }
+    }
+    pub fn display(&self) {
+        clear_background(WHITE);
+
+        let grid_width = GameState::GRID_SIZE as f32 * self.board.square_size;
+        let grid_height = GameState::GRID_SIZE as f32 * self.board.square_size;
+        let offset_x = (self.board.window_size.screen_width - grid_width) / 2.0;
+        let offset_y = (self.board.window_size.screen_height - grid_height) / 2.0;
+
+        for row in 0..GameState::GRID_SIZE {
+            for col in 0..GameState::GRID_SIZE {
+                let x = offset_x + col as f32 * self.board.square_size;
+                let y = offset_y + row as f32 * self.board.square_size;
+
+                draw_rectangle_lines(x, y, self.board.square_size, self.board.square_size, 2.0, BLACK);
+            }
+        }
+    }
+
+    pub fn display_battle_interface(&self) {
+        let x = 80.0;
+        let y = 80.0;
+        if widgets::Button::new(self.board.battle_icons.magic.clone())
+            .size(vec2(x, y))
+            .ui(&mut *root_ui())
+        {
+            println!("Textured button clicked!");
+        }
+
+        if widgets::Button::new(self.board.battle_icons.attack.clone())
+            .size(vec2(x, y))
+            .ui(&mut *root_ui())
+        {
+            println!("Textured button clicked!");
+        }
+
+        if widgets::Button::new(self.board.battle_icons.defend.clone())
+            .size(vec2(x, y))
+            .ui(&mut *root_ui())
+        {
+            println!("Textured button clicked!");
+        }
+
+        if widgets::Button::new(self.board.battle_icons.wait.clone())
+            .size(vec2(x, y))
+            .ui(&mut *root_ui())
+        {
+            println!("Textured button clicked!");
+        }
+
+        if widgets::Button::new(self.board.battle_icons.run.clone())
+            .size(vec2(x, y))
+            .position(vec2(self.board.window_size.screen_width - 80.0, 0.0))
+            .ui(&mut *root_ui())
+        {
+            println!("Textured button clicked!");
+        }
+
+        if widgets::Button::new(self.board.battle_icons.negotiate.clone())
+            .size(vec2(x, y))
+            .position(vec2(self.board.window_size.screen_width - 80.0, 80.0))
+            .ui(&mut *root_ui())
+        {
+            println!("Textured button clicked!");
+        }
+
+        if widgets::Button::new(self.board.battle_icons.system.clone())
+            .size(vec2(x, y))
+            .position(vec2(self.board.window_size.screen_width - 80.0, 160.0))
+            .ui(&mut *root_ui())
+        {
+            println!("Textured button clicked!");
+        }
     }
 }

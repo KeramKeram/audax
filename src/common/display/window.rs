@@ -1,5 +1,5 @@
 use bincode::{Decode, Encode};
-#[derive(Encode, Decode, PartialEq, Debug)]
+#[derive(Encode, Decode, PartialEq, Debug, Clone)]
 pub struct WindowSize {
     pub screen_width: f32,
     pub screen_height: f32,
