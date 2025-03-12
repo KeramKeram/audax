@@ -3,8 +3,17 @@ use crate::common::display::WindowSize;
 use crate::common::io::MousePosition;
 use crate::game::event_loop::{Handler, Payload};
 use crate::game::GameEvent;
-pub struct MouseClickHandler {}
+use crate::display::{GameState};
+use std::sync::{Arc};
 
+pub struct MouseClickHandler {
+    pub(crate) game_state: Arc<GameState>,
+}
+impl MouseClickHandler {
+    pub fn new(game_state: Arc<GameState>) -> Self {
+        Self { game_state }
+    }
+}
 impl Handler for MouseClickHandler {
     fn handle(&self, event: &GameEvent, payload: &Payload) {
         let config = config::standard();

@@ -14,8 +14,9 @@ async fn main() {
     let mut screen_width: f32 =600.0;
 
     let (mut board, mut game_stat) = display::Board::new(screen_width, screen_height);
+    let mut game_state = Arc::new(game_stat);
     let (tx, rx) = mpsc::channel();
-    let handler_mouse_cliked = Arc::new(crate::game::MouseClickHandler {});
+    let handler_mouse_cliked = Arc::new(crate::game::MouseClickHandler { game_state });
     let handler_window_size = Arc::new(crate::game::WindowResizeHandler {});
     let loop_thread = std::thread::spawn(move || {
         let event_loop = crate::game::EventLoop::new(rx, vec![]);
