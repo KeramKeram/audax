@@ -5,7 +5,7 @@ mod common;
 use crate::common::io::MousePosition;
 use crate::game::GameEvent;
 use macroquad::prelude::*;
-use std::sync::{mpsc, Arc};
+use std::sync::{mpsc, Arc, Mutex};
 use bincode::{config, Decode, Encode};
 
 #[macroquad::main("Grid Example")]
@@ -13,7 +13,8 @@ async fn main() {
     let mut screen_height: f32 = 800.0;
     let mut screen_width: f32 =600.0;
 
-    let (mut board, mut game_stat) = display::Board::new(screen_width, screen_height);
+    let (mut board_obj, mut game_stat) = display::Board::new(screen_width, screen_height);
+    let mut board = Arc::new(Mutex::new(board_obj));
     let mut game_state = Arc::new(game_stat);
     let (tx, rx) = mpsc::channel();
     let handler_mouse_cliked = Arc::new(game::MouseClickHandler::new(game_state));
@@ -42,7 +43,7 @@ async fn main() {
         {
             screen_width = macroquad::window::screen_width();
             screen_height = macroquad::window::screen_height();
-            board.update_screen_size(screen_width, screen_height);
+            board.lock().unwrap().update_screen_size(screen_width, screen_height);
         }
 
         next_frame().await

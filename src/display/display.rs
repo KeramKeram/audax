@@ -114,28 +114,27 @@ impl Board {
 
 
 pub struct BoardRenderer {
-    board: Board,
+    board: Arc<Mutex<Board>>,
 }
-// TODO: Fix display
 
 impl BoardRenderer {
-    pub fn new(board: Board) -> Self {
+    pub fn new(board: Arc<Mutex<Board>>) -> Self {
         Self { board }
     }
     pub fn display(&self) {
         clear_background(WHITE);
 
-        let grid_width = GameState::GRID_SIZE as f32 * self.board.square_size;
-        let grid_height = GameState::GRID_SIZE as f32 * self.board.square_size;
-        let offset_x = (self.board.window_size.screen_width - grid_width) / 2.0;
-        let offset_y = (self.board.window_size.screen_height - grid_height) / 2.0;
+        let grid_width = GameState::GRID_SIZE as f32 * self.board.lock().unwrap().square_size;
+        let grid_height = GameState::GRID_SIZE as f32 * self.board.lock().unwrap().square_size;
+        let offset_x = (self.board.lock().unwrap().window_size.screen_width - grid_width) / 2.0;
+        let offset_y = (self.board.lock().unwrap().window_size.screen_height - grid_height) / 2.0;
 
         for row in 0..GameState::GRID_SIZE {
             for col in 0..GameState::GRID_SIZE {
-                let x = offset_x + col as f32 * self.board.square_size;
-                let y = offset_y + row as f32 * self.board.square_size;
-
-                draw_rectangle_lines(x, y, self.board.square_size, self.board.square_size, 2.0, BLACK);
+                let x = offset_x + col as f32 * self.board.lock().unwrap().square_size;
+                let y = offset_y + row as f32 * self.board.lock().unwrap().square_size;
+                let square_size = self.board.lock().unwrap().square_size;
+                draw_rectangle_lines(x, y, square_size, square_size, 2.0, BLACK);
             }
         }
     }
@@ -143,56 +142,61 @@ impl BoardRenderer {
     pub fn display_battle_interface(&self) {
         let x = 80.0;
         let y = 80.0;
-        if widgets::Button::new(self.board.battle_icons.magic.clone())
+
+        let board = self.board.lock().unwrap();
+        let screen_width = board.window_size.screen_width;
+        let icons = &board.battle_icons;
+
+        if widgets::Button::new(icons.magic.clone())
             .size(vec2(x, y))
             .ui(&mut *root_ui())
         {
             println!("Textured button clicked!");
         }
 
-        if widgets::Button::new(self.board.battle_icons.attack.clone())
+        if widgets::Button::new(icons.attack.clone())
             .size(vec2(x, y))
             .ui(&mut *root_ui())
         {
             println!("Textured button clicked!");
         }
 
-        if widgets::Button::new(self.board.battle_icons.defend.clone())
+        if widgets::Button::new(icons.defend.clone())
             .size(vec2(x, y))
             .ui(&mut *root_ui())
         {
             println!("Textured button clicked!");
         }
 
-        if widgets::Button::new(self.board.battle_icons.wait.clone())
+        if widgets::Button::new(icons.wait.clone())
             .size(vec2(x, y))
             .ui(&mut *root_ui())
         {
             println!("Textured button clicked!");
         }
 
-        if widgets::Button::new(self.board.battle_icons.run.clone())
+        if widgets::Button::new(icons.run.clone())
             .size(vec2(x, y))
-            .position(vec2(self.board.window_size.screen_width - 80.0, 0.0))
+            .position(vec2(screen_width - 80.0, 0.0))
             .ui(&mut *root_ui())
         {
             println!("Textured button clicked!");
         }
 
-        if widgets::Button::new(self.board.battle_icons.negotiate.clone())
+        if widgets::Button::new(icons.negotiate.clone())
             .size(vec2(x, y))
-            .position(vec2(self.board.window_size.screen_width - 80.0, 80.0))
+            .position(vec2(screen_width - 80.0, 80.0))
             .ui(&mut *root_ui())
         {
             println!("Textured button clicked!");
         }
 
-        if widgets::Button::new(self.board.battle_icons.system.clone())
+        if widgets::Button::new(icons.system.clone())
             .size(vec2(x, y))
-            .position(vec2(self.board.window_size.screen_width - 80.0, 160.0))
+            .position(vec2(screen_width - 80.0, 160.0))
             .ui(&mut *root_ui())
         {
             println!("Textured button clicked!");
         }
-    }
+    } // lock zostanie zwolniony tutaj
 }
