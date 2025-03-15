@@ -21,13 +21,21 @@ impl Handler for MouseClickHandler {
         let (decoded, len): (MousePosition, usize) =
             bincode::decode_from_slice(&payload[..], config).unwrap();
         println!("Mouse clicked Event Loop! {}, {}", decoded.0, decoded.1);
-        let mut stats = self.game_state.tiles.lock().unwrap();
-        let click_in_area = self.board.lock().unwrap().check_if_is_in_boundries(decoded.0, decoded.1);
-        if click_in_area {
-            println!("Mouse clicked Event Loop! Cliked in area {}, {}", decoded.0, decoded.1);
-        } else {
-            println!("Mouse clicked Event Loop! Cliked NOT in area {}, {}", decoded.0, decoded.1);
-        }
+        //let mut stats = self.game_state.tiles.lock().unwrap();
+        if let Ok(board) = self.board.lock() {
+            let click_in_area = board.check_if_is_in_boundries(decoded.0, decoded.1);
+            if click_in_area {
+                let tile_index = board.get_tile_index(decoded.0, decoded.1);
+                let mut tiles = self.game_state.tiles.lock().unwrap();
+                if let Some(index) = tile_index {
+                    let tile = tiles.get_mut(index).unwrap();
+                }
+                println!(
+                    "Mouse clicked Event Loop! Cliked in area {}, {}",
+                    decoded.0, decoded.1
+                );
+            }
+        } // lock jest automatycznie zwalniany tutaj
     }
 }
 

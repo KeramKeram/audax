@@ -86,7 +86,7 @@ impl Board {
         }
         return true;
     }
-    pub fn get_tile(&self, x: f32, y: f32) -> Option<Tile> {
+    pub fn get_tile_index(&self, x: f32, y: f32) -> Option<usize> {
         if (!self.check_if_is_in_boundries(x, y)) {
             return None;
         }
@@ -97,8 +97,7 @@ impl Board {
         let offset_y = (self.window_size.screen_height - grid_height) / 2.0;
         let col = ((x - offset_x) / self.square_size) as usize;
         let row = ((y - offset_y) / self.square_size) as usize;
-        let num = self.game_state.tiles.lock().unwrap();
-        num.get(row * GameState::GRID_SIZE + col).cloned()
+        Some(row * GameState::GRID_SIZE + col)
     }
 
     pub fn update_screen_size(&mut self, width: f32, height: f32) {
