@@ -1,18 +1,21 @@
+use bincode::config;
 use crate::common::display::WindowSize;
 use crate::common::io::MousePosition;
 use crate::display::{Board, GameState};
-use crate::game::GameEvent;
+use crate::game::{GameEvent, GuiEvent};
 use crate::game::event_loop::{Handler, Payload};
-use bincode::config;
-use std::sync::{Arc, Mutex};
+use crate::display::tile::TileType;
+use std::sync::{Arc, Mutex, mpsc};
+
 
 pub struct MouseClickHandler {
     pub(crate) game_state: Arc<GameState>,
     board: Arc<Mutex<Board>>,
+    tx: mpsc::Sender<(GuiEvent, Vec<u8>)>
 }
 impl MouseClickHandler {
-    pub fn new(game_state: Arc<GameState>, board: Arc<Mutex<Board>>) -> Self {
-        Self { game_state, board }
+    pub fn new(game_state: Arc<GameState>, board: Arc<Mutex<Board>>, tx: mpsc::Sender<(GuiEvent, Vec<u8>)>) -> Self {
+        Self { game_state, board, tx }
     }
 }
 impl Handler for MouseClickHandler {
@@ -29,6 +32,11 @@ impl Handler for MouseClickHandler {
                 let mut tiles = self.game_state.tiles.lock().unwrap();
                 if let Some(index) = tile_index {
                     let tile = tiles.get_mut(index).unwrap();
+                    match tile.tile_type {
+                        TileType::MyUnit => {}
+                        _ => {}
+                    }
+
                 }
                 println!(
                     "Mouse clicked Event Loop! Cliked in area {}, {}",

@@ -4,3 +4,8 @@ pub enum GameEvent {
     WindowResized,
     MouseCliked
 }
+
+pub enum GuiEvent {
+    BackLightTile
+}
+
