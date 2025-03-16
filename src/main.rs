@@ -1,17 +1,17 @@
+mod common;
 mod display;
 mod game;
-mod common;
 
 use crate::common::io::MousePosition;
 use crate::game::{GameEvent, GuiEvent};
+use bincode::{config, Decode, Encode};
 use macroquad::prelude::*;
 use std::sync::{mpsc, Arc, Mutex};
-use bincode::{config, Decode, Encode};
 
 #[macroquad::main("Grid Example")]
 async fn main() {
     let mut screen_height: f32 = 800.0;
-    let mut screen_width: f32 =600.0;
+    let mut screen_width: f32 = 600.0;
 
     let (mut board_obj, mut game_stat) = display::Board::new(screen_width, screen_height);
     let mut board = Arc::new(Mutex::new(board_obj));
@@ -20,7 +20,11 @@ async fn main() {
     let (tx, rx) = mpsc::channel();
     let (txGui, rxGui) = mpsc::channel();
 
-    let handler_mouse_cliked = Arc::new(game::MouseClickHandler::new(game_state, board.clone(), txGui.clone()));
+    let handler_mouse_cliked = Arc::new(game::MouseClickHandler::new(
+        game_state,
+        board.clone(),
+        txGui.clone(),
+    ));
     let handler_window_size = Arc::new(crate::game::WindowResizeHandler {});
 
     let loop_thread = std::thread::spawn(move || {
@@ -48,7 +52,10 @@ async fn main() {
         {
             screen_width = macroquad::window::screen_width();
             screen_height = macroquad::window::screen_height();
-            board.lock().unwrap().update_screen_size(screen_width, screen_height);
+            board
+                .lock()
+                .unwrap()
+                .update_screen_size(screen_width, screen_height);
         }
 
         if let Ok((event, payload)) = rxGui.try_recv() {

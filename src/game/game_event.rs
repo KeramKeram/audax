@@ -3,7 +3,7 @@ use bincode::{Decode, Encode};
 pub enum GameEvent {
     TileClicked,
     WindowResized,
-    MouseCliked
+    MouseCliked,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Encode, Decode)]

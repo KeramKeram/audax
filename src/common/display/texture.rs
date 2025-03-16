@@ -1,6 +1,6 @@
+use macroquad::prelude::{Image, Texture2D};
 use std::fs::File;
 use std::io::Read;
-use macroquad::prelude::{Texture2D, Image};
 
 pub fn load_texture_sync(path: &str) -> Texture2D {
     let mut file = File::open(path).expect("Can't open file.");

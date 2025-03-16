@@ -1,16 +1,15 @@
 use super::tile::{Tile, TileType};
-use crate::common::display::WindowSize;
 use crate::common::display::texture::load_texture_sync;
+use crate::common::display::WindowSize;
 use macroquad::color::{BLACK, WHITE};
 use macroquad::prelude::{
-    Image, Texture2D, clear_background, draw_rectangle_lines, load_texture, screen_height,
-    screen_width, vec2,
+    clear_background, draw_rectangle_lines, vec2
+    , Texture2D,
 };
 use macroquad::ui::{
-    Drag, Ui, hash, root_ui,
-    widgets::{self, Group},
+    root_ui,
+    widgets::{self},
 };
-use std::alloc::System;
 use std::sync::{Arc, Mutex};
 
 #[derive(Clone)]
@@ -197,5 +196,5 @@ impl BoardRenderer {
         {
             println!("Textured button clicked!");
         }
-    } // lock zostanie zwolniony tutaj
+    }
 }
