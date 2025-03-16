@@ -3,7 +3,7 @@ mod game;
 mod common;
 
 use crate::common::io::MousePosition;
-use crate::game::GameEvent;
+use crate::game::{GameEvent, GuiEvent};
 use macroquad::prelude::*;
 use std::sync::{mpsc, Arc, Mutex};
 use bincode::{config, Decode, Encode};
@@ -31,13 +31,13 @@ async fn main() {
     });
 
     let mut board_renderer = display::BoardRenderer::new(board.clone());
+    let config = config::standard();
     loop {
         board_renderer.display();
         board_renderer.display_battle_interface();
         if is_mouse_button_pressed(MouseButton::Left) {
             let (mouse_x, mouse_y) = mouse_position();
             let position = MousePosition(mouse_x, mouse_y);
-            let config = config::standard();
             let encoded: Vec<u8> = bincode::encode_to_vec(&position, config).unwrap();
             tx.send((GameEvent::MouseCliked, encoded)).unwrap();
             print!("Mouse clicked at ({}, {})\n", mouse_x, mouse_y);
@@ -49,6 +49,17 @@ async fn main() {
             screen_width = macroquad::window::screen_width();
             screen_height = macroquad::window::screen_height();
             board.lock().unwrap().update_screen_size(screen_width, screen_height);
+        }
+
+        if let Ok((event, payload)) = rxGui.try_recv() {
+            match event {
+                GuiEvent::BackLightTile => {
+                    let (tile_index, _): (usize, usize) =
+                        bincode::decode_from_slice(&payload[..], config).unwrap();
+                    println!("Backlighting tile at index: {}", tile_index);
+                    // Handle tile backlighting here
+                }
+            }
         }
 
         next_frame().await

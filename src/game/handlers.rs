@@ -26,14 +26,19 @@ impl Handler for MouseClickHandler {
         println!("Mouse clicked Event Loop! {}, {}", decoded.0, decoded.1);
         //let mut stats = self.game_state.tiles.lock().unwrap();
         if let Ok(board) = self.board.lock() {
-            let click_in_area = board.check_if_is_in_boundries(decoded.0, decoded.1);
+            let (mouse_x, mouse_y) = (decoded.0, decoded.1);
+            let click_in_area = board.check_if_is_in_boundries(mouse_x, mouse_y);
             if click_in_area {
-                let tile_index = board.get_tile_index(decoded.0, decoded.1);
+                let tile_index = board.get_tile_index(mouse_x, mouse_y);
                 let mut tiles = self.game_state.tiles.lock().unwrap();
                 if let Some(index) = tile_index {
                     let tile = tiles.get_mut(index).unwrap();
                     match tile.tile_type {
-                        TileType::MyUnit => {}
+                        TileType::MyUnit => {
+                            let config = config::standard();
+                            let encoded: Vec<u8> = bincode::encode_to_vec(&index, config).unwrap();
+                            self.tx.send((GuiEvent::BackLightTile, encoded)).unwrap();
+                        }
                         _ => {}
                     }
 

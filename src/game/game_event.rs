@@ -1,3 +1,4 @@
+use bincode::{Decode, Encode};
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum GameEvent {
     TileClicked,
@@ -5,6 +6,7 @@ pub enum GameEvent {
     MouseCliked
 }
 
+#[derive(Clone, Debug, PartialEq, Eq, Hash, Encode, Decode)]
 pub enum GuiEvent {
     BackLightTile
 }
