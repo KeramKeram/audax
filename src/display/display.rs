@@ -1,11 +1,8 @@
 use super::tile::{Tile, TileType};
-use crate::common::display::texture::load_texture_sync;
 use crate::common::display::WindowSize;
+use crate::common::display::texture::load_texture_sync;
 use macroquad::color::{BLACK, WHITE};
-use macroquad::prelude::{
-    clear_background, draw_rectangle_lines, vec2
-    , Texture2D,
-};
+use macroquad::prelude::{Texture2D, clear_background, draw_rectangle, draw_rectangle_lines, vec2};
 use macroquad::ui::{
     root_ui,
     widgets::{self},
@@ -66,12 +63,15 @@ impl Board {
             negotiate: load_texture_sync("data/graphics/general/hand.png"),
             system: load_texture_sync("data/graphics/general/unit_defence.png"),
         };
-        (Self {
-            window_size,
-            game_state: game_state.clone(),
-            square_size,
-            battle_icons,
-        }, game_state)
+        (
+            Self {
+                window_size,
+                game_state: game_state.clone(),
+                square_size,
+                battle_icons,
+            },
+            game_state,
+        )
     }
 
     pub fn check_if_is_in_boundries(&self, x: f32, y: f32) -> bool {
@@ -108,8 +108,14 @@ impl Board {
         let target_grid_size = f32::min(width, height) * 0.8;
         self.square_size = target_grid_size / GameState::GRID_SIZE as f32;
     }
-}
 
+    pub fn reset_back_light_all_tiles(&mut self) {
+        let mut tiles = self.game_state.tiles.lock().unwrap();
+        for tile in tiles.iter_mut() {
+            tile.back_light = false;
+        }
+    }
+}
 
 pub struct BoardRenderer {
     board: Arc<Mutex<Board>>,
@@ -132,7 +138,23 @@ impl BoardRenderer {
                 let x = offset_x + col as f32 * self.board.lock().unwrap().square_size;
                 let y = offset_y + row as f32 * self.board.lock().unwrap().square_size;
                 let square_size = self.board.lock().unwrap().square_size;
-                draw_rectangle_lines(x, y, square_size, square_size, 2.0, BLACK);
+                let tile_index = self.board.lock().unwrap().get_tile_index(x, y);
+                if let Some(tile) = self
+                    .board
+                    .lock()
+                    .unwrap()
+                    .game_state
+                    .tiles
+                    .lock()
+                    .unwrap()
+                    .get(tile_index.unwrap())
+                {
+                    if tile.back_light {
+                        draw_rectangle(x, y, square_size, square_size, BLACK);
+                    } else {
+                        draw_rectangle_lines(x, y, square_size, square_size, 2.0, BLACK);
+                    }
+                }
             }
         }
     }

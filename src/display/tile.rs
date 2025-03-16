@@ -14,6 +14,7 @@ pub enum TileType {
 pub struct Tile {
     pub tile_type: TileType,
     texture: Texture2D,
+    pub back_light: bool,
 }
 
 impl Tile {
@@ -21,6 +22,7 @@ impl Tile {
         Self {
             tile_type: tile_type,
             texture: load_texture_sync(texture_path),
+            back_light: false
         }
     }
 }

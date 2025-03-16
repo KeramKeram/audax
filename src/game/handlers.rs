@@ -25,7 +25,7 @@ impl Handler for MouseClickHandler {
             bincode::decode_from_slice(&payload[..], config).unwrap();
         println!("Mouse clicked Event Loop! {}, {}", decoded.0, decoded.1);
         //let mut stats = self.game_state.tiles.lock().unwrap();
-        if let Ok(board) = self.board.lock() {
+        if let Ok(mut board) = self.board.lock() {
             let (mouse_x, mouse_y) = (decoded.0, decoded.1);
             let click_in_area = board.check_if_is_in_boundries(mouse_x, mouse_y);
             if click_in_area {
@@ -35,8 +35,7 @@ impl Handler for MouseClickHandler {
                     let tile = tiles.get_mut(index).unwrap();
                     match tile.tile_type {
                         TileType::MyUnit => {
-                            let config = config::standard();
-                            let encoded: Vec<u8> = bincode::encode_to_vec(&index, config).unwrap();
+                            let encoded: Vec<u8> = bincode::encode_to_vec(true, config).unwrap();
                             self.tx.send((GuiEvent::BackLightTile, encoded)).unwrap();
                         }
                         _ => {}
@@ -47,7 +46,7 @@ impl Handler for MouseClickHandler {
                     decoded.0, decoded.1
                 );
             }
-        } // lock jest automatycznie zwalniany tutaj
+        }
     }
 }
 

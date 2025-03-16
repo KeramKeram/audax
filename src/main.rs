@@ -4,9 +4,9 @@ mod game;
 
 use crate::common::io::MousePosition;
 use crate::game::{GameEvent, GuiEvent};
-use bincode::{config, Decode, Encode};
+use bincode::{Decode, Encode, config};
 use macroquad::prelude::*;
-use std::sync::{mpsc, Arc, Mutex};
+use std::sync::{Arc, Mutex, mpsc};
 
 #[macroquad::main("Grid Example")]
 async fn main() {
@@ -64,7 +64,14 @@ async fn main() {
                     let (tile_index, _): (usize, usize) =
                         bincode::decode_from_slice(&payload[..], config).unwrap();
                     println!("Backlighting tile at index: {}", tile_index);
-                    // Handle tile backlighting here
+                    {
+                        let mut board_guard = board.lock().unwrap();
+                        board_guard.reset_back_light_all_tiles();
+                        let mut tiles = board_guard.game_state.tiles.lock().unwrap();
+                        if let Some(tile) = tiles.get_mut(tile_index) {
+                            tile.back_light = true;
+                        }
+                    }
                 }
             }
         }
