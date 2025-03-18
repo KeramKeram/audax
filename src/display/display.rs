@@ -9,6 +9,9 @@ use macroquad::ui::{
 };
 use std::sync::{Arc, Mutex};
 use macroquad::shapes::draw_circle;
+use tile::Unit;
+
+use crate::display::tile;
 
 #[derive(Clone)]
 struct BattleIcons {
@@ -75,11 +78,21 @@ impl Board {
         )
     }
 
-    pub fn check_if_is_in_boundries(&self, x: f32, y: f32) -> bool {
+    fn calculate_grid_size(&self) -> (f32, f32) {
         let grid_width = GameState::GRID_SIZE as f32 * self.square_size;
         let grid_height = GameState::GRID_SIZE as f32 * self.square_size;
+        return (grid_width, grid_height);
+    }
+
+    fn calculate_offset(&self, grid_width: f32, grid_height: f32) -> (f32, f32) {
         let offset_x = (self.window_size.screen_width - grid_width) / 2.0;
         let offset_y = (self.window_size.screen_height - grid_height) / 2.0;
+        return (offset_x, offset_y);
+    }
+
+    pub fn check_if_is_in_boundries(&self, x: f32, y: f32) -> bool {
+        let (grid_width, grid_height) = self.calculate_grid_size();
+        let (offset_x, offset_y) = self.calculate_offset(grid_width, grid_height);
 
         if x < offset_x || x > offset_x + grid_width || y < offset_y || y > offset_y + grid_height {
             return false;
@@ -90,14 +103,16 @@ impl Board {
         if (!self.check_if_is_in_boundries(x, y)) {
             return None;
         }
-
-        let grid_width = GameState::GRID_SIZE as f32 * self.square_size;
-        let grid_height = GameState::GRID_SIZE as f32 * self.square_size;
-        let offset_x = (self.window_size.screen_width - grid_width) / 2.0;
-        let offset_y = (self.window_size.screen_height - grid_height) / 2.0;
+        let (grid_width, grid_height) = self.calculate_grid_size();
+        let (offset_x, offset_y) = self.calculate_offset(grid_width, grid_height);
         let col = ((x - offset_x) / self.square_size) as usize;
         let row = ((y - offset_y) / self.square_size) as usize;
         Some(row * GameState::GRID_SIZE + col)
+    }
+
+    pub fn get_tile_by_index(&self, row: usize, col: usize) -> Option<Tile> {
+        let tiles = self.game_state.tiles.lock().unwrap();
+        tiles.get(row * GameState::GRID_SIZE + col).cloned()
     }
 
     pub fn update_screen_size(&mut self, width: f32, height: f32) {
@@ -115,6 +130,12 @@ impl Board {
         for tile in tiles.iter_mut() {
             tile.back_light = false;
         }
+    }
+
+    pub fn add_unit(&mut self, row: usize, col: usize, unit: Unit) {
+        let mut tiles = self.game_state.tiles.lock().unwrap();
+        let tile = tiles.get_mut(row * GameState::GRID_SIZE + col).unwrap();
+        tile.set_unit(unit, TileType::MyUnit);
     }
 }
 
@@ -156,7 +177,7 @@ impl BoardRenderer {
                         draw_rectangle_lines(x, y, square_size, square_size, 2.0, BLACK);
                     }
                     if let Some(unit) = &tile.get_unit() {
-                        draw_circle((x + square_size) / 2 as f32, (y + square_size) / 2 as f32, 5.0, RED);
+                        draw_circle(((x + square_size + offset_x) / 2.0) as f32, ((y + square_size + offset_y) / 2.0) as f32, 5.0, RED);
                     }
                 }
             }
