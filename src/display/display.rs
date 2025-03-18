@@ -1,13 +1,14 @@
 use super::tile::{Tile, TileType};
 use crate::common::display::WindowSize;
 use crate::common::display::texture::load_texture_sync;
-use macroquad::color::{BLACK, WHITE};
+use macroquad::color::{BLACK, RED, WHITE};
 use macroquad::prelude::{Texture2D, clear_background, draw_rectangle, draw_rectangle_lines, vec2};
 use macroquad::ui::{
     root_ui,
     widgets::{self},
 };
 use std::sync::{Arc, Mutex};
+use macroquad::shapes::draw_circle;
 
 #[derive(Clone)]
 struct BattleIcons {
@@ -153,6 +154,9 @@ impl BoardRenderer {
                         draw_rectangle(x, y, square_size, square_size, BLACK);
                     } else {
                         draw_rectangle_lines(x, y, square_size, square_size, 2.0, BLACK);
+                    }
+                    if let Some(unit) = &tile.get_unit() {
+                        draw_circle((x + square_size) / 2 as f32, (y + square_size) / 2 as f32, 5.0, RED);
                     }
                 }
             }

@@ -2,7 +2,7 @@ use crate::common::display::texture::load_texture_sync;
 use macroquad::prelude::Texture2D;
 
 #[derive(Debug, Clone)]
-struct Unit;
+pub struct Unit;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum TileType {
@@ -33,6 +33,10 @@ impl Tile {
 
     pub fn set_unit(&mut self, unit: Unit, tile_type: TileType) {
         self.unit = Some(unit);
+    }
+
+    pub fn get_unit(&self) -> Option<&Unit> {
+        self.unit.as_ref()
     }
 }
 
