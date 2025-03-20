@@ -33,6 +33,7 @@ impl Tile {
 
     pub fn set_unit(&mut self, unit: Unit, tile_type: TileType) {
         self.unit = Some(unit);
+        self.tile_type = tile_type;
     }
 
     pub fn get_unit(&self) -> Option<&Unit> {

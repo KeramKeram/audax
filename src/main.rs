@@ -36,8 +36,10 @@ async fn main() {
 
     let mut board_renderer = display::BoardRenderer::new(board.clone());
     let config = config::standard();
+
     let unit = display::Unit;
     board.lock().unwrap().add_unit(0, 0, unit);
+
     loop {
         board_renderer.display();
         board_renderer.display_battle_interface();
