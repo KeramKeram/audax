@@ -35,7 +35,7 @@ impl Handler for MouseClickHandler {
                     let tile = tiles.get_mut(index).unwrap();
                     match tile.tile_type {
                         TileType::MyUnit => {
-                            let encoded: Vec<u8> = bincode::encode_to_vec(true, config).unwrap();
+                            let encoded: Vec<u8> = bincode::encode_to_vec(index, config).unwrap();
                             self.tx.send((GuiEvent::BackLightTile, encoded)).unwrap();
                         }
                         _ => {}
