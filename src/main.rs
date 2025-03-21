@@ -20,12 +20,12 @@ async fn main() {
     let (tx, rx) = mpsc::channel();
     let (txGui, rxGui) = mpsc::channel();
 
-    let handler_mouse_cliked = Arc::new(game::MouseClickHandler::new(
+    let handler_mouse_cliked = Arc::new(Mutex::new(game::MouseClickHandler::new(
         game_state,
         board.clone(),
         txGui.clone(),
-    ));
-    let handler_window_size = Arc::new(crate::game::WindowResizeHandler {});
+    )));
+    let handler_window_size = Arc::new(Mutex::new(crate::game::WindowResizeHandler {}));
 
     let loop_thread = std::thread::spawn(move || {
         let event_loop = crate::game::EventLoop::new(rx, vec![]);

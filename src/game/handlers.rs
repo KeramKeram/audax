@@ -15,16 +15,16 @@ pub struct MouseClickHandler {
 }
 impl MouseClickHandler {
     pub fn new(game_state: Arc<GameState>, board: Arc<Mutex<Board>>, tx: mpsc::Sender<(GuiEvent, Vec<u8>)>) -> Self {
-        Self { game_state, board, tx }
+        Self { game_state, board, tx, last_selected_index: None }
     }
 }
 impl Handler for MouseClickHandler {
-    fn handle(&self, event: &GameEvent, payload: &Payload) {
+    fn handle(&mut self, event: &GameEvent, payload: &Payload) {
         let config = config::standard();
         let (decoded, len): (MousePosition, usize) =
             bincode::decode_from_slice(&payload[..], config).unwrap();
         println!("Mouse clicked Event Loop! {}, {}", decoded.0, decoded.1);
-        //let mut stats = self.game_state.tiles.lock().unwrap();
+
         if let Ok(mut board) = self.board.lock() {
             let (mouse_x, mouse_y) = (decoded.0, decoded.1);
             let click_in_area = board.check_if_is_in_boundries(mouse_x, mouse_y);
@@ -53,7 +53,7 @@ impl Handler for MouseClickHandler {
 pub struct WindowResizeHandler {}
 
 impl Handler for WindowResizeHandler {
-    fn handle(&self, event: &GameEvent, payload: &Payload) {
+    fn handle(&mut self, event: &GameEvent, payload: &Payload) {
         let (window_size, _): (WindowSize, usize) =
             bincode::decode_from_slice(payload, bincode::config::standard()).unwrap();
         println!("Window resized Event Loop! {:?}", window_size);

@@ -5,7 +5,7 @@ use std::sync::{Arc, Mutex};
 
 pub type Payload = Vec<u8>;
 pub trait Handler: Send + Sync {
-    fn handle(&self, event: &GameEvent, payload: &Payload);
+    fn handle(&mut self, event: &GameEvent, payload: &Payload);
 }
 
 pub struct Event {
@@ -14,7 +14,7 @@ pub struct Event {
 }
 
 pub struct EventLoop {
-    pub register: Arc<Mutex<HashMap<GameEvent, Vec<Arc<dyn Handler>>>>>,
+    pub register: Arc<Mutex<HashMap<GameEvent, Vec<Arc<Mutex<dyn Handler>>>>>>,
     rx: Receiver<(GameEvent, Payload)>,
 }
 
@@ -26,18 +26,20 @@ impl EventLoop {
         }
     }
 
-    pub fn register_handler(&self, event: GameEvent, handler: Arc<dyn Handler>) {
+    pub fn register_handler(&self, event: GameEvent, handler: Arc<Mutex<dyn Handler>>) {
         let mut registry = self.register.lock().unwrap();
         registry.entry(event).or_insert_with(Vec::new).push(handler);
     }
+
     pub fn start(&self) {
         let registry = Arc::clone(&self.register);
         loop {
             for rec in &self.rx {
                 let event = rec;
-                let registry = registry.lock().unwrap();
-                if let Some(handlers) = registry.get(&event.0) {
+                let mut registry = registry.lock().unwrap();
+                if let Some(handlers) = registry.get_mut(&event.0) {
                     for handler in handlers {
+                        let mut handler = handler.lock().unwrap();
                         handler.handle(&event.0, &event.1);
                     }
                 }
