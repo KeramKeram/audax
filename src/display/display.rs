@@ -189,7 +189,9 @@ impl BoardRenderer {
                         draw_rectangle_lines(x, y, square_size, square_size, 2.0, BLACK);
                     }
                     if let Some(unit) = &tile.get_unit() {
-                        draw_circle(((x + square_size + offset_x) / 2.0) as f32, ((y + square_size + offset_y) / 2.0) as f32, 5.0, RED);
+                        let center_x = x + square_size / 2.0;
+                        let center_y = y + square_size / 2.0;
+                        draw_circle(center_x, center_y, 5.0, RED);
                     }
                 }
             }
