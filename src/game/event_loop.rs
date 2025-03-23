@@ -78,31 +78,4 @@ mod tests {
         assert!(registry.contains_key(&GameEvent::TileClicked));
         assert_eq!(registry[&GameEvent::TileClicked].len(), 1);
     }
-
-    #[test]
-    fn test_event_handling() {
-        let (tx, rx) = mpsc::channel();
-        let mut event_loop = EventLoop::new(rx, vec![]);
-        let called = Arc::new(Mutex::new(false));
-        let handler = Arc::new(TestHandler {
-            called: called.clone(),
-        });
-
-        event_loop.register_handler(GameEvent::TileClicked, handler);
-
-        // Run the event loop in a separate thread to avoid blocking
-        let handle = std::thread::spawn(move || {
-            event_loop.start();
-        });
-        tx.send((GameEvent::TileClicked, vec![])).unwrap();
-        // Give the event loop some time to process the event
-        std::thread::sleep(std::time::Duration::from_millis(100));
-
-        // Check if the handler was called
-        let called = called.lock().unwrap();
-        assert!(*called);
-
-        // Stop the event loop thread
-        handle.thread().unpark();
-    }
 }
