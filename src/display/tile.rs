@@ -2,7 +2,9 @@ use crate::common::display::texture::load_texture_sync;
 use macroquad::prelude::Texture2D;
 
 #[derive(Debug, Clone)]
-pub struct Unit;
+pub struct Unit {
+    pub id: usize,
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum TileType {
@@ -18,7 +20,7 @@ pub struct Tile {
     pub tile_type: TileType,
     texture: Texture2D,
     pub back_light: bool,
-    unit: Option<Unit>
+    pub unit: Option<Unit>
 }
 
 impl Tile {

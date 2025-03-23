@@ -37,7 +37,7 @@ async fn main() {
     let mut board_renderer = display::BoardRenderer::new(board.clone());
     let config = config::standard();
 
-    let unit = display::Unit;
+    let unit = display::Unit { id: 0 };
     board.lock().unwrap().add_unit(0, 0, unit);
 
     loop {
@@ -75,6 +75,15 @@ async fn main() {
                         if let Some(tile) = tiles.get_mut(tile_index) {
                             tile.back_light = true;
                         }
+                    }
+                },
+                GuiEvent::MoveUnit => {
+                    let ((tile_index, unit_id), _): ((usize, usize), usize) =
+                        bincode::decode_from_slice(&payload[..], config).unwrap();
+                    println!("Move tile at index: {}", tile_index);
+                    {
+                        let mut board_guard = board.lock().unwrap();
+                        board_guard.move_unit(tile_index, unit_id);
                     }
                 }
             }

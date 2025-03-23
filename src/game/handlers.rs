@@ -6,12 +6,13 @@ use crate::game::event_loop::{Handler, Payload};
 use crate::game::{GameEvent, GuiEvent};
 use bincode::config;
 use std::sync::{mpsc, Arc, Mutex};
-
+use macroquad::ui::Drag::No;
 
 pub struct MouseClickHandler {
     pub(crate) game_state: Arc<GameState>,
     board: Arc<Mutex<Board>>,
     tx: mpsc::Sender<(GuiEvent, Vec<u8>)>,
+    last_selected_index: Option<usize>,
 }
 impl MouseClickHandler {
     pub fn new(game_state: Arc<GameState>, board: Arc<Mutex<Board>>, tx: mpsc::Sender<(GuiEvent, Vec<u8>)>) -> Self {
@@ -37,6 +38,18 @@ impl Handler for MouseClickHandler {
                         TileType::MyUnit => {
                             let encoded: Vec<u8> = bincode::encode_to_vec(index, config).unwrap();
                             self.tx.send((GuiEvent::BackLightTile, encoded)).unwrap();
+                            self.last_selected_index = Some(index);
+                        },
+                        TileType::Empty => {
+                            // First check if there is a selected unit
+                            // then if it is my unit
+                            // then try too move
+                            if let Some(last_selested_index) = self.last_selected_index {
+                                let last_tile = tiles.get_mut(last_selested_index).unwrap();
+                                let encoded: Vec<u8> = bincode::encode_to_vec((index, last_tile.get_unit().unwrap().id), config).unwrap();
+                                self.tx.send((GuiEvent::MoveUnit, encoded)).unwrap();
+                            }
+                            self.last_selected_index = None;
                         }
                         _ => {}
                     }

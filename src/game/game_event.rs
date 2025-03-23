@@ -8,6 +8,7 @@ pub enum GameEvent {
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Encode, Decode)]
 pub enum GuiEvent {
-    BackLightTile
+    BackLightTile,
+    MoveUnit
 }
 
