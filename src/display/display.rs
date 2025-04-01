@@ -140,11 +140,20 @@ impl Board {
 
     pub fn move_unit(&mut self, index: usize, unit_id: usize) {
         let mut tiles = self.game_state.tiles.lock().unwrap();
-        if let Some(tile) = tiles.iter_mut().find(|x| x.unit.as_ref().unwrap().id == unit_id) {
+        if let Some(tile) = tiles.iter_mut().find(|x| {
+            if let Some(unit) = &x.unit {
+                unit.id == unit_id
+            } else {
+                false
+            }
+        }) {
             println!("Znaleziono: {}", unit_id);
-            let unit = tile.unit.clone();
-            tile.unit = None;
-            tiles.get_mut(index).unwrap().unit = unit;
+            let unit = tile.unit.take(); // używamy take() zamiast clone()
+            tile.tile_type = TileType::Empty;
+            if let Some(target_tile) = tiles.get_mut(index) {
+                target_tile.unit = unit;
+                target_tile.tile_type = TileType::MyUnit;
+            }
         } else {
             println!("Nie znaleziono pasującego elementu.");
         }

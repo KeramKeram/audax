@@ -51,14 +51,15 @@ impl EventLoop {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::sync::Arc;
+    use std::sync::mpsc;
 
+    #[derive(Clone)]
     struct TestHandler {
         pub called: Arc<Mutex<bool>>,
     }
 
     impl Handler for TestHandler {
-        fn handle(&self, event: &GameEvent, payload: &Payload) {
+        fn handle(&mut self, event: &GameEvent, payload: &Payload) {
             let mut called = self.called.lock().unwrap();
             *called = true;
         }
@@ -67,10 +68,10 @@ mod tests {
     #[test]
     fn test_register_handler() {
         let (tx, rx) = mpsc::channel();
-        let mut event_loop = EventLoop::new(rx, vec![]);
-        let handler = Arc::new(TestHandler {
+        let event_loop = EventLoop::new(rx, vec![]);
+        let handler = Arc::new(Mutex::new(TestHandler {
             called: Arc::new(Mutex::new(false)),
-        });
+        }));
 
         event_loop.register_handler(GameEvent::TileClicked, handler);
 

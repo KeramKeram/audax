@@ -47,6 +47,8 @@ impl Handler for MouseClickHandler {
                             if let Some(last_selested_index) = self.last_selected_index {
                                 let last_tile = tiles.get_mut(last_selested_index).unwrap();
                                 let encoded: Vec<u8> = bincode::encode_to_vec((index, last_tile.get_unit().unwrap().id), config).unwrap();
+                                let tile = tiles.get_mut(index).unwrap();
+                                tile.tile_type = TileType::MyUnit;
                                 self.tx.send((GuiEvent::MoveUnit, encoded)).unwrap();
                             }
                             self.last_selected_index = None;

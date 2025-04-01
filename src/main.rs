@@ -78,11 +78,12 @@ async fn main() {
                     }
                 },
                 GuiEvent::MoveUnit => {
+                    let mut board_guard = board.lock().unwrap();
+                    board_guard.reset_back_light_all_tiles();
                     let ((tile_index, unit_id), _): ((usize, usize), usize) =
                         bincode::decode_from_slice(&payload[..], config).unwrap();
                     println!("Move tile at index: {}", tile_index);
                     {
-                        let mut board_guard = board.lock().unwrap();
                         board_guard.move_unit(tile_index, unit_id);
                     }
                 }
