@@ -100,7 +100,7 @@ impl Board {
         return true;
     }
     pub fn get_tile_index(&self, x: f32, y: f32) -> Option<usize> {
-        if (!self.check_if_is_in_boundries(x, y)) {
+        if !self.check_if_is_in_boundries(x, y) {
             return None;
         }
         let (grid_width, grid_height) = self.calculate_grid_size();
