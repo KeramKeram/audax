@@ -6,7 +6,6 @@ use crate::game::event_loop::{Handler, Payload};
 use crate::game::{GameEvent, GuiEvent};
 use bincode::config;
 use std::sync::{mpsc, Arc, Mutex};
-use macroquad::ui::Drag::No;
 
 pub struct MouseClickHandler {
     pub(crate) game_state: Arc<GameState>,
