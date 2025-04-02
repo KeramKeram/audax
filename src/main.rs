@@ -28,7 +28,7 @@ async fn main() {
     let handler_window_size = Arc::new(Mutex::new(crate::game::WindowResizeHandler {}));
 
     let loop_thread = std::thread::spawn(move || {
-        let event_loop = crate::game::EventLoop::new(rx, vec![]);
+        let event_loop = crate::game::EventLoop::new(rx);
         event_loop.register_handler(GameEvent::MouseCliked, handler_mouse_cliked.clone());
         event_loop.register_handler(GameEvent::WindowResized, handler_window_size.clone());
         event_loop.start();

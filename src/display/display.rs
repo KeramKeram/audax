@@ -197,7 +197,7 @@ impl BoardRenderer {
                     } else {
                         draw_rectangle_lines(x, y, square_size, square_size, 2.0, BLACK);
                     }
-                    if let Some(unit) = &tile.get_unit() {
+                    if let Some(_) = &tile.get_unit() {
                         let center_x = x + square_size / 2.0;
                         let center_y = y + square_size / 2.0;
                         draw_circle(center_x, center_y, 5.0, RED);

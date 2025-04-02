@@ -19,7 +19,7 @@ pub struct EventLoop {
 }
 
 impl EventLoop {
-    pub fn new(rx: Receiver<(GameEvent, Payload)>, tiles: Vec<GameEvent>) -> Self {
+    pub fn new(rx: Receiver<(GameEvent, Payload)>) -> Self {
         EventLoop {
             register: Arc::new(Mutex::new(HashMap::new())),
             rx,
@@ -68,7 +68,7 @@ mod tests {
     #[test]
     fn test_register_handler() {
         let (tx, rx) = mpsc::channel();
-        let event_loop = EventLoop::new(rx, vec![]);
+        let event_loop = EventLoop::new(rx);
         let handler = Arc::new(Mutex::new(TestHandler {
             called: Arc::new(Mutex::new(false)),
         }));
