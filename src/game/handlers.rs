@@ -21,11 +21,11 @@ impl MouseClickHandler {
 impl Handler for MouseClickHandler {
     fn handle(&mut self, event: &GameEvent, payload: &Payload) {
         let config = config::standard();
-        let (decoded, len): (MousePosition, usize) =
+        let (decoded, _): (MousePosition, usize) =
             bincode::decode_from_slice(&payload[..], config).unwrap();
         println!("Mouse clicked Event Loop! {}, {}", decoded.0, decoded.1);
 
-        if let Ok(mut board) = self.board.lock() {
+        if let Ok(board) = self.board.lock() {
             let (mouse_x, mouse_y) = (decoded.0, decoded.1);
             let click_in_area = board.check_if_is_in_boundries(mouse_x, mouse_y);
             if click_in_area {

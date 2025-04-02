@@ -29,7 +29,7 @@ async fn main() {
 
     let loop_thread = std::thread::spawn(move || {
         let event_loop = crate::game::EventLoop::new(rx);
-        event_loop.register_handler(GameEvent::MouseCliked, handler_mouse_cliked.clone());
+        event_loop.register_handler(GameEvent::MouseClicked, handler_mouse_cliked.clone());
         event_loop.register_handler(GameEvent::WindowResized, handler_window_size.clone());
         event_loop.start();
     });
@@ -47,7 +47,7 @@ async fn main() {
             let (mouse_x, mouse_y) = mouse_position();
             let position = MousePosition(mouse_x, mouse_y);
             let encoded: Vec<u8> = bincode::encode_to_vec(&position, config).unwrap();
-            tx.send((GameEvent::MouseCliked, encoded)).unwrap();
+            tx.send((GameEvent::MouseClicked, encoded)).unwrap();
             print!("Mouse clicked at ({}, {})\n", mouse_x, mouse_y);
         }
 
