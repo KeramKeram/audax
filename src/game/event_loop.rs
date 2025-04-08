@@ -8,11 +8,6 @@ pub trait Handler: Send + Sync {
     fn handle(&mut self, event: &GameEvent, payload: &Payload);
 }
 
-pub struct Event {
-    pub event: GameEvent,
-    pub payload: Payload,
-}
-
 pub struct EventLoop {
     register: Arc<Mutex<HashMap<GameEvent, Vec<Arc<Mutex<dyn Handler>>>>>>,
     rx: Receiver<(GameEvent, Payload)>,
