@@ -31,16 +31,20 @@ impl EventLoop {
         registry.entry(event).or_insert_with(Vec::new).push(handler);
     }
 
+    fn handle_event(&self, event: &GameEvent, payload: &Payload) {
+        let registry = self.register.lock().unwrap();
+        if let Some(handlers) = registry.get(&event) {
+            for handler in handlers {
+                if let Ok(mut handler) = handler.lock() {
+                    handler.handle(&event, &payload);
+                }
+            }
+        }
+    }
     pub fn start(&self) {
         loop {
             for (event, payload) in &self.rx {
-                let registry = self.register.lock().unwrap();
-                if let Some(handlers) = registry.get(&event) {
-                    for handler in handlers {
-                        let mut handler = handler.lock().unwrap();
-                        handler.handle(&event, &payload);
-                    }
-                }
+                self.handle_event(&event, &payload);
             }
         }
     }
