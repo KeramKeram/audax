@@ -57,8 +57,7 @@ mod tests {
 
     impl Handler for TestHandler {
         fn handle(&mut self, _event: &GameEvent, _payload: &Payload) {
-            let mut called = self.called.lock().unwrap();
-            *called = true;
+            *self.called.lock().unwrap() = true;
         }
     }
 
@@ -105,7 +104,6 @@ mod tests {
         event_loop.register_handler(GameEvent::TileClicked, handler);
         event_loop.handle_event(&GameEvent::TileClicked, &vec![1, 2, 3]);
 
-        let called = *called_flag.lock().unwrap();
-        assert_eq!(called, true);
+        assert!(*called_flag.lock().unwrap());
     }
 }
