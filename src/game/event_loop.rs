@@ -56,15 +56,27 @@ mod tests {
     }
 
     impl Handler for TestHandler {
-        fn handle(&mut self, event: &GameEvent, payload: &Payload) {
+        fn handle(&mut self, _event: &GameEvent, _payload: &Payload) {
             let mut called = self.called.lock().unwrap();
             *called = true;
         }
     }
 
+    macro_rules! setup_event_loop_and_handler {
+    () => {{
+        let (_tx, rx) = mpsc::channel();
+        let event_loop = EventLoop::new(rx);
+        let called_flag = Arc::new(Mutex::new(false));
+        let handler = Arc::new(Mutex::new(TestHandler {
+            called: Arc::clone(&called_flag),
+        }));
+        (event_loop, called_flag, handler)
+    }};
+}
+
     #[test]
     fn test_register_handler() {
-        let (tx, rx) = mpsc::channel();
+        let (_tx, rx) = mpsc::channel();
         let event_loop = EventLoop::new(rx);
         let handler = Arc::new(Mutex::new(TestHandler {
             called: Arc::new(Mutex::new(false)),
@@ -75,5 +87,25 @@ mod tests {
         let registry = event_loop.register.lock().unwrap();
         assert!(registry.contains_key(&GameEvent::TileClicked));
         assert_eq!(registry[&GameEvent::TileClicked].len(), 1);
+    }
+
+    #[test]
+    fn test_handle_empty_event() {
+        let (event_loop, called_flag, handler) = setup_event_loop_and_handler!();
+        event_loop.register_handler(GameEvent::TileClicked, handler);
+        event_loop.handle_event(&GameEvent::TileClicked, &vec![]);
+
+        let called = *called_flag.lock().unwrap();
+        assert_eq!(called, true);
+    }
+
+    #[test]
+    fn test_handle_event_with_payload() {
+        let (event_loop, called_flag, handler) = setup_event_loop_and_handler!();
+        event_loop.register_handler(GameEvent::TileClicked, handler);
+        event_loop.handle_event(&GameEvent::TileClicked, &vec![1, 2, 3]);
+
+        let called = *called_flag.lock().unwrap();
+        assert_eq!(called, true);
     }
 }
