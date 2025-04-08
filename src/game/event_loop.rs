@@ -14,7 +14,7 @@ pub struct Event {
 }
 
 pub struct EventLoop {
-    pub register: Arc<Mutex<HashMap<GameEvent, Vec<Arc<Mutex<dyn Handler>>>>>>,
+    register: Arc<Mutex<HashMap<GameEvent, Vec<Arc<Mutex<dyn Handler>>>>>>,
     rx: Receiver<(GameEvent, Payload)>,
 }
 
