@@ -32,15 +32,13 @@ impl EventLoop {
     }
 
     pub fn start(&self) {
-        let registry = Arc::clone(&self.register);
         loop {
-            for rec in &self.rx {
-                let event = rec;
-                let mut registry = registry.lock().unwrap();
-                if let Some(handlers) = registry.get_mut(&event.0) {
+            for (event, payload) in &self.rx {
+                let registry = self.register.lock().unwrap();
+                if let Some(handlers) = registry.get(&event) {
                     for handler in handlers {
                         let mut handler = handler.lock().unwrap();
-                        handler.handle(&event.0, &event.1);
+                        handler.handle(&event, &payload);
                     }
                 }
             }
