@@ -18,24 +18,38 @@ impl MouseClickHandler {
         Self { game_state, board, tx, last_selected_index: None }
     }
 
-    fn handle_click_in_area(&mut self, mouse_x: f32, mouse_y: f32) {
-        let board = self.board.lock().unwrap();
+    fn back_light_tile(&mut self, index: usize) {
         let config = config::standard();
-        let tile_index = board.get_tile_index(mouse_x, mouse_y);
-        let mut tiles = self.game_state.tiles.lock().unwrap();
+        let encoded: Vec<u8> = bincode::encode_to_vec(index, config).unwrap();
+        self.tx.send((GuiEvent::BackLightTile, encoded)).unwrap();
+        self.last_selected_index = Some(index);
+    }
+
+    fn handle_click_in_area(&mut self, mouse_x: f32, mouse_y: f32) {
+        let config = config::standard();
+        let get_tile_index = {
+            let board = self.board.lock().unwrap();
+            let config = config::standard();
+            board.get_tile_index(mouse_x, mouse_y)
+        };
+
+        let tile_index = get_tile_index;
+
         if let Some(index) = tile_index {
-            let tile = tiles.get_mut(index).unwrap();
-            match tile.tile_type {
+            let tile_type = {
+                let tiles = self.game_state.tiles.lock().unwrap();
+                tiles.get(index).unwrap().tile_type.clone()
+            };
+            match tile_type {
                 TileType::MyUnit => {
-                    let encoded: Vec<u8> = bincode::encode_to_vec(index, config).unwrap();
-                    self.tx.send((GuiEvent::BackLightTile, encoded)).unwrap();
-                    self.last_selected_index = Some(index);
+                    self.back_light_tile(index);
                 },
                 TileType::Empty => {
                     // First check if there is a selected unit
                     // then if it is my unit
                     // then try too move
                     if let Some(last_selested_index) = self.last_selected_index {
+                        let mut tiles = self.game_state.tiles.lock().unwrap();
                         let last_tile = tiles.get_mut(last_selested_index).unwrap();
                         let encoded: Vec<u8> = bincode::encode_to_vec((index, last_tile.get_unit().unwrap().id), config).unwrap();
                         let tile = tiles.get_mut(index).unwrap();
