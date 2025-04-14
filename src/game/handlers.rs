@@ -3,9 +3,11 @@ use crate::common::io::MousePosition;
 use crate::display::tile::TileType;
 use crate::display::{Board, GameState};
 use crate::game::event_loop::{Handler, Payload};
+use crate::game::move_unit::MoveUnit;
 use crate::game::{GameEvent, GuiEvent};
 use bincode::config;
-use std::sync::{mpsc, Arc, Mutex};
+use bincode::config::Configuration;
+use std::sync::{Arc, Mutex, mpsc};
 
 pub struct MouseClickHandler {
     pub(crate) game_state: Arc<GameState>,
@@ -14,8 +16,17 @@ pub struct MouseClickHandler {
     last_selected_index: Option<usize>,
 }
 impl MouseClickHandler {
-    pub fn new(game_state: Arc<GameState>, board: Arc<Mutex<Board>>, tx: mpsc::Sender<(GuiEvent, Vec<u8>)>) -> Self {
-        Self { game_state, board, tx, last_selected_index: None }
+    pub fn new(
+        game_state: Arc<GameState>,
+        board: Arc<Mutex<Board>>,
+        tx: mpsc::Sender<(GuiEvent, Vec<u8>)>,
+    ) -> Self {
+        Self {
+            game_state,
+            board,
+            tx,
+            last_selected_index: None,
+        }
     }
 
     fn back_light_tile(&mut self, index: usize) {
@@ -43,18 +54,14 @@ impl MouseClickHandler {
             match tile_type {
                 TileType::MyUnit => {
                     self.back_light_tile(index);
-                },
+                }
                 TileType::Empty => {
                     // First check if there is a selected unit
                     // then if it is my unit
                     // then try too move
                     if let Some(last_selested_index) = self.last_selected_index {
-                        let mut tiles = self.game_state.tiles.lock().unwrap();
-                        let last_tile = tiles.get_mut(last_selested_index).unwrap();
-                        let encoded: Vec<u8> = bincode::encode_to_vec((index, last_tile.get_unit().unwrap().id), config).unwrap();
-                        let tile = tiles.get_mut(index).unwrap();
-                        tile.tile_type = TileType::MyUnit;
-                        self.tx.send((GuiEvent::MoveUnit, encoded)).unwrap();
+                        let move_unit = MoveUnit::new(self.game_state.clone(), self.tx.clone());
+                        move_unit.move_unit(config, index, last_selested_index);
                     }
                     self.last_selected_index = None;
                 }
