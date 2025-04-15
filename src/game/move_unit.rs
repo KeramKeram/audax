@@ -1,8 +1,9 @@
+use bincode::config::Configuration;
 use crate::display::GameState;
 use crate::display::tile::TileType;
+use crate::display::tile::Unit;
 use crate::game::GuiEvent;
 use crate::game::event_loop::Payload;
-use bincode::config::Configuration;
 use std::sync::{Arc, mpsc};
 
 pub struct MoveUnit {
@@ -27,7 +28,6 @@ impl MoveUnit {
         } else {
             return;
         }
-        let last_tile = tiles.get_mut(last_selected_index).unwrap();
     }
 }
 
@@ -39,9 +39,8 @@ mod tests {
     use bincode::config;
     use std::sync::mpsc::TryRecvError; // Zmiana z mpmc na mpsc
     use std::sync::{Mutex, mpsc};
-
-    #[test]
-    fn test_no_selected_unit() {
+    macro_rules! setup_game_state {
+    () => {{
         let (tx, rx) = mpsc::channel();
         let game_state = GameState {
             tiles: Arc::new(Mutex::new(vec![
@@ -50,11 +49,38 @@ mod tests {
             ])),
         };
         let config = config::standard();
-
+        (tx, rx, game_state, config)
+    }};
+}
+    #[test]
+    fn test_no_selected_unit() {
+        let (tx, rx, game_state, config) = setup_game_state!();
         let sut = MoveUnit::new(Arc::new(game_state), tx.clone());
+
         sut.move_unit(config, 0, 1);
         let response = rx.try_recv();
-        assert_eq!(rx.try_recv().is_err(), true);
-        assert_eq!(rx.try_recv().err().unwrap(), TryRecvError::Empty);
+
+        assert_eq!(response.is_err(), true);
+        assert_eq!(response.err().unwrap(), TryRecvError::Empty);
+    }
+
+    #[test]
+    fn test_move_to_index_two() {
+        let (tx, rx, game_state, config) = setup_game_state!();
+        let last_selected_index: usize = 0;
+        let index: usize = 1;
+        let mut tiles = game_state.tiles.lock().unwrap();
+        if let Some(last_tile) = tiles.get_mut(last_selected_index) {
+            last_tile.unit = Some(Unit { id: 0 });
+        }
+        drop(tiles);
+        let sut = MoveUnit::new(Arc::new(game_state), tx.clone());
+
+
+        sut.move_unit(config, 1, 0);
+        let response = rx.try_recv();
+
+        assert_eq!(response.is_ok(), true);
+        // assert_eq!(rx.try_recv().err().unwrap(), TryRecvError::Empty);
     }
 }
