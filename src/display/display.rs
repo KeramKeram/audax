@@ -30,7 +30,7 @@ pub struct GameState {
 }
 
 impl GameState {
-    const GRID_SIZE: usize = 12;
+    pub const GRID_SIZE: usize = 12;
 }
 
 #[derive(Clone)]

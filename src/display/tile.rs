@@ -43,4 +43,14 @@ impl Tile {
     }
 }
 
-
+impl Tile {
+    #[cfg(test)]
+    pub fn new_for_test(tile_type: TileType) -> Self {
+        Self {
+            tile_type,
+            texture: unsafe { std::mem::zeroed() }, // Bezpieczne w kontekście testów
+            back_light: false,
+            unit: None,
+        }
+    }
+}
