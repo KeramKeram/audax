@@ -16,18 +16,15 @@ impl MoveUnit {
         Self { game_state, tx }
     }
 
-    pub fn move_unit(&self, config: Configuration, index: usize, last_selected_index: usize) {
-        let mut tiles = self.game_state.tiles.lock().unwrap();
-        if let Some(last_tile) = tiles.get_mut(last_selected_index) {
-            if let Some(unit) = last_tile.get_unit() {
-                let encoded: Vec<u8> = bincode::encode_to_vec((index, unit.id), config).unwrap();
-                let tile = tiles.get_mut(index).unwrap();
-                tile.tile_type = TileType::MyUnit;
-                self.tx.send((GuiEvent::MoveUnit, encoded)).unwrap();
-            }
-        } else {
-            return;
-        }
+    pub fn move_unit(&self, config: Configuration, index: usize, last_selected_index: usize) -> Result<(), String> {
+        let mut tiles = self.game_state.tiles.lock().map_err(|_| "Can't lock tile for move of unit")?;
+        let mut last_tile = tiles.get_mut(last_selected_index).ok_or_else(|| "Can't get last tile")?;
+        let unit = last_tile.get_unit().ok_or_else(|| "Can't get unit")?;
+        let encoded: Vec<u8> = bincode::encode_to_vec((index, unit.id), config).map_err(|_| "Serialization error")?;
+        let tile = tiles.get_mut(index).ok_or_else(|| "Can't get tile")?;
+        tile.tile_type = TileType::MyUnit;
+        self.tx.send((GuiEvent::MoveUnit, encoded)).map_err(|_| "Failed to send move unit")?;
+        Ok(())
     }
 }
 
