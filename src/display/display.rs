@@ -158,6 +158,11 @@ impl Board {
             println!("Nie znaleziono pasującego elementu.");
         }
     }
+
+    pub fn get_unit(&self, index: usize) -> Option<Unit> {
+        let tiles = self.game_state.tiles.lock().unwrap();
+        tiles.iter().find(|x| x.unit.as_ref().map_or(false, |x| x.id == index)).and_then(|tile| tile.unit.clone())
+    }
 }
 
 pub struct BoardRenderer {

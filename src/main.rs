@@ -37,7 +37,7 @@ async fn main() {
     let board_renderer = display::BoardRenderer::new(board.clone());
     let config = config::standard();
 
-    let unit = display::Unit { id: 0 };
+    let unit = display::Unit { id: 0, move_range: 2 };
     board.lock().unwrap().add_unit(0, 0, unit);
 
     loop {
@@ -72,9 +72,23 @@ async fn main() {
                         let mut board_guard = board.lock().unwrap();
                         board_guard.reset_back_light_all_tiles();
                         let mut tiles = board_guard.game_state.tiles.lock().unwrap();
+                        let tiles_size = tiles.len();
                         if let Some(tile) = tiles.get_mut(tile_index) {
                             tile.back_light = true;
+                            if let Some(unit) = tile.get_unit() {
+                                let move_count = unit.move_range + 1;
+                                for i in 0..move_count {
+                                    for j in 0..move_count {
+                                        if i < tiles_size {
+                                            if let Some(tile) = tiles.get_mut(tile_index + j * 12 + i) {
+                                                tile.back_light = true;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
+                        // TODO:get unit -> take move value -> backligth rest
                     }
                 },
                 GuiEvent::MoveUnit => {
