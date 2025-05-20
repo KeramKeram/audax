@@ -7,7 +7,39 @@ use crate::game::{GameEvent, GuiEvent};
 use bincode::{config};
 use macroquad::prelude::*;
 use std::sync::{Arc, Mutex, mpsc};
+use crate::display::{Board, GameState};
+use crate::display::tile::Tile;
 
+fn back_light_tiles(move_count: usize, tiles_size: usize, tile_index: usize, tiles: &mut std::sync::MutexGuard<'_, Vec<Tile>>) {
+    for i in 0..move_count {
+        if i < tiles_size {
+            if let Some(tile) = tiles.get_mut(tile_index + i) {
+                tile.back_light = true;
+            }
+
+            let minus_step = tile_index.checked_sub(i);
+            if let Some(minus_step) = minus_step {
+                if let Some(tile) = tiles.get_mut(minus_step) {
+                    tile.back_light = true;
+                }
+            }
+
+            let row_step_minus = tile_index.checked_sub(GameState::GRID_SIZE * i);
+            if let Some(row_step) = row_step_minus {
+                if let Some(tile) = tiles.get_mut(row_step) {
+                    tile.back_light = true;
+                }
+            }
+
+            let row_step_plus = tile_index.checked_add(GameState::GRID_SIZE * i);
+            if let Some(row_step) = row_step_plus {
+                if let Some(tile) = tiles.get_mut(row_step) {
+                    tile.back_light = true;
+                }
+            }
+        }
+    }
+}
 #[macroquad::main("Grid Example")]
 async fn main() {
     let mut screen_height: f32 = 800.0;
@@ -77,18 +109,9 @@ async fn main() {
                             tile.back_light = true;
                             if let Some(unit) = tile.get_unit() {
                                 let move_count = unit.move_range + 1;
-                                for i in 0..move_count {
-                                    for j in 0..move_count {
-                                        if i < tiles_size {
-                                            if let Some(tile) = tiles.get_mut(tile_index + j * 12 + i) {
-                                                tile.back_light = true;
-                                            }
-                                        }
-                                    }
-                                }
+                                back_light_tiles(move_count, tiles_size, tile_index, &mut tiles);
                             }
                         }
-                        // TODO:get unit -> take move value -> backligth rest
                     }
                 },
                 GuiEvent::MoveUnit => {
