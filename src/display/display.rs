@@ -110,6 +110,15 @@ impl Board {
         Some(row * GameState::GRID_SIZE + col)
     }
 
+    pub fn get_tile_coordinates_by_index(index: usize) -> Option<(usize, usize)> {
+        if index > GameState::GRID_SIZE * GameState::GRID_SIZE {
+            return None;
+        }
+        let row = index / GameState::GRID_SIZE;
+        let col = index % GameState::GRID_SIZE;
+        Some((row, col))
+    }
+
     pub fn get_tile_by_index(&self, row: usize, col: usize) -> Option<Tile> {
         let tiles = self.game_state.tiles.lock().unwrap();
         tiles.get(row * GameState::GRID_SIZE + col).cloned()

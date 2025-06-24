@@ -14,7 +14,7 @@ fn back_light_tiles(move_count: usize, tiles_size: usize, tile_index: usize, til
     for i in 0..move_count {
         if i < tiles_size {
             if (tile_index >= GameState::GRID_SIZE) {
-                let minus_row = tile_index.checked_sub(GameState::GRID_SIZE);
+                let minus_row = tile_index.checked_sub(GameState::GRID_SIZE * i);
                 if let Some(minus_row) = minus_row {
                     if let Some(tile) = tiles.get_mut(minus_row) {
                         tile.back_light = true;
@@ -23,7 +23,7 @@ fn back_light_tiles(move_count: usize, tiles_size: usize, tile_index: usize, til
             }
 
             if tile_index <= (GameState::GRID_SIZE * GameState::GRID_SIZE - 1) {
-                let plus_row = tile_index.checked_add(GameState::GRID_SIZE);
+                let plus_row = tile_index.checked_add(GameState::GRID_SIZE * i);
                 if let Some(plus_row) = plus_row {
                     if let Some(tile) = tiles.get_mut(plus_row) {
                         tile.back_light = true;
@@ -31,17 +31,19 @@ fn back_light_tiles(move_count: usize, tiles_size: usize, tile_index: usize, til
                 }
             }
 
-            if (tile_index % GameState::GRID_SIZE) != 0 {
-                let minus_column = tile_index.checked_sub(1);
+            if tile_index % GameState::GRID_SIZE != 0 {
+                let minus_column = tile_index.checked_sub(1 * i);
                 if let Some(minus_column) = minus_column {
-                    if let Some(tile) = tiles.get_mut(minus_column) {
-                        tile.back_light = true;
+                    if (minus_column % GameState::GRID_SIZE <= tile_index % GameState::GRID_SIZE) {
+                        if let Some(tile) = tiles.get_mut(minus_column) {
+                            tile.back_light = true;
+                        }
                     }
                 }
             }
 
             if tile_index >= GameState::GRID_SIZE && (tile_index % GameState::GRID_SIZE != 0) {
-                let corner_column_left = tile_index.checked_sub(GameState::GRID_SIZE + 1);
+                let corner_column_left = tile_index.checked_sub(GameState::GRID_SIZE + 1 * i);
                 if let Some(corner_column_left) = corner_column_left {
                     if let Some(tile) = tiles.get_mut(corner_column_left) {
                         tile.back_light = true;
@@ -50,16 +52,18 @@ fn back_light_tiles(move_count: usize, tiles_size: usize, tile_index: usize, til
             }
 
             if tile_index >= GameState::GRID_SIZE && ((tile_index + 1) % GameState::GRID_SIZE != 0) {
-                let corner_column_rh = tile_index.checked_sub(GameState::GRID_SIZE - 1);
+                let corner_column_rh = tile_index.checked_sub(GameState::GRID_SIZE - 1 * i);
                 if let Some(corner_column_rh) = corner_column_rh {
-                    if let Some(tile) = tiles.get_mut(corner_column_rh) {
-                        tile.back_light = true;
+                    if (corner_column_rh % GameState::GRID_SIZE >= tile_index % GameState::GRID_SIZE) {
+                        if let Some(tile) = tiles.get_mut(corner_column_rh) {
+                            tile.back_light = true;
+                        }
                     }
                 }
             }
 
             if tile_index <= (GameState::GRID_SIZE * GameState::GRID_SIZE - 1) && (tile_index % GameState::GRID_SIZE) != 0 {
-                let corner_column_left_down = tile_index.checked_add(GameState::GRID_SIZE - 1);
+                let corner_column_left_down = tile_index.checked_add(GameState::GRID_SIZE - 1 * i);
                 if let Some(corner_column_left_down) = corner_column_left_down {
                     if let Some(tile) = tiles.get_mut(corner_column_left_down) {
                         tile.back_light = true;
