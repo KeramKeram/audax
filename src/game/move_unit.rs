@@ -68,7 +68,7 @@ mod tests {
         let index: usize = 1;
         let mut tiles = game_state.tiles.lock().unwrap();
         if let Some(last_tile) = tiles.get_mut(last_selected_index) {
-            last_tile.unit = Some(Unit { id: 0 });
+            last_tile.unit = Some(Unit { id: 0, move_range: 2 });
         }
         drop(tiles);
         let sut = MoveUnit::new(Arc::new(game_state), tx.clone());

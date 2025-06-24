@@ -4,6 +4,7 @@ use macroquad::prelude::Texture2D;
 #[derive(Debug, Clone)]
 pub struct Unit {
     pub id: usize,
+    pub move_range: usize,
 }
 
 #[derive(Debug, Clone, PartialEq)]

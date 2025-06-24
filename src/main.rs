@@ -7,7 +7,91 @@ use crate::game::{GameEvent, GuiEvent};
 use bincode::{config};
 use macroquad::prelude::*;
 use std::sync::{Arc, Mutex, mpsc};
+use crate::display::{Board, GameState};
+use crate::display::tile::Tile;
 
+fn back_light_tiles(move_count: usize, tiles_size: usize, tile_index: usize, tiles: &mut std::sync::MutexGuard<'_, Vec<Tile>>) {
+    for i in 0..move_count {
+        if i < tiles_size {
+            if (tile_index >= GameState::GRID_SIZE) {
+                let minus_row = tile_index.checked_sub(GameState::GRID_SIZE * i);
+                if let Some(minus_row) = minus_row {
+                    if let Some(tile) = tiles.get_mut(minus_row) {
+                        tile.back_light = true;
+                    }
+                }
+            }
+
+            if tile_index <= (GameState::GRID_SIZE * GameState::GRID_SIZE - 1) {
+                let plus_row = tile_index.checked_add(GameState::GRID_SIZE * i);
+                if let Some(plus_row) = plus_row {
+                    if let Some(tile) = tiles.get_mut(plus_row) {
+                        tile.back_light = true;
+                    }
+                }
+            }
+
+            if tile_index % GameState::GRID_SIZE != 0 {
+                let minus_column = tile_index.checked_sub(1 * i);
+                if let Some(minus_column) = minus_column {
+                    if (minus_column % GameState::GRID_SIZE <= tile_index % GameState::GRID_SIZE) {
+                        if let Some(tile) = tiles.get_mut(minus_column) {
+                            tile.back_light = true;
+                        }
+                    }
+                }
+            }
+
+            if tile_index >= GameState::GRID_SIZE && (tile_index % GameState::GRID_SIZE != 0) {
+                let corner_column_left = tile_index.checked_sub(GameState::GRID_SIZE + 1 * i);
+                if let Some(corner_column_left) = corner_column_left {
+                    if let Some(tile) = tiles.get_mut(corner_column_left) {
+                        tile.back_light = true;
+                    }
+                }
+            }
+
+            if tile_index >= GameState::GRID_SIZE && ((tile_index + 1) % GameState::GRID_SIZE != 0) {
+                let corner_column_rh = tile_index.checked_sub(GameState::GRID_SIZE - 1 * i);
+                if let Some(corner_column_rh) = corner_column_rh {
+                    if (corner_column_rh % GameState::GRID_SIZE >= tile_index % GameState::GRID_SIZE) {
+                        if let Some(tile) = tiles.get_mut(corner_column_rh) {
+                            tile.back_light = true;
+                        }
+                    }
+                }
+            }
+
+            if tile_index <= (GameState::GRID_SIZE * GameState::GRID_SIZE - 1) && (tile_index % GameState::GRID_SIZE) != 0 {
+                let corner_column_left_down = tile_index.checked_add(GameState::GRID_SIZE - 1 * i);
+                if let Some(corner_column_left_down) = corner_column_left_down {
+                    if let Some(tile) = tiles.get_mut(corner_column_left_down) {
+                        tile.back_light = true;
+                    }
+                }
+            }
+
+
+            if ((tile_index + 1) % GameState::GRID_SIZE) != 0 {
+                let plus_column = tile_index.checked_add(1);
+                if let Some(plus_column) = plus_column {
+                    if let Some(tile) = tiles.get_mut(plus_column) {
+                        tile.back_light = true;
+                    }
+                }
+            }
+
+            if tile_index <= (GameState::GRID_SIZE * GameState::GRID_SIZE - 1) && ((tile_index + 1) % GameState::GRID_SIZE) != 0 {
+                let corner_column_rh_down = tile_index.checked_add(GameState::GRID_SIZE + 1);
+                if let Some(corner_column_rh_down) = corner_column_rh_down {
+                    if let Some(tile) = tiles.get_mut(corner_column_rh_down) {
+                        tile.back_light = true;
+                    }
+                }
+            }
+        }
+    }
+}
 #[macroquad::main("Grid Example")]
 async fn main() {
     let mut screen_height: f32 = 800.0;
@@ -37,7 +121,7 @@ async fn main() {
     let board_renderer = display::BoardRenderer::new(board.clone());
     let config = config::standard();
 
-    let unit = display::Unit { id: 0 };
+    let unit = display::Unit { id: 0, move_range: 2 };
     board.lock().unwrap().add_unit(0, 0, unit);
 
     loop {
@@ -72,8 +156,13 @@ async fn main() {
                         let mut board_guard = board.lock().unwrap();
                         board_guard.reset_back_light_all_tiles();
                         let mut tiles = board_guard.game_state.tiles.lock().unwrap();
+                        let tiles_size = tiles.len();
                         if let Some(tile) = tiles.get_mut(tile_index) {
                             tile.back_light = true;
+                            if let Some(unit) = tile.get_unit() {
+                                let move_count = unit.move_range + 1;
+                                back_light_tiles(move_count, tiles_size, tile_index, &mut tiles);
+                            }
                         }
                     }
                 },
